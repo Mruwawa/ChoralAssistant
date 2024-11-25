@@ -52,3 +52,4 @@ ChoralAssistant.Backend.Calendar/bin
 obj/
 ChoralAssistant.Frontend/.env
 bin/
+ChoralAssistant.Backend/appsettings.Development.json
