@@ -102,7 +102,7 @@ export class CalendarComponent {
   }
 
   addEvent() {
-    const dialogRef = this.dialog.open(AddEventComponent, { width: '500px', height: '500px' });
+    const dialogRef = this.dialog.open(AddEventComponent, { width: '500px', height: '600px' });
 
     dialogRef.afterClosed().subscribe((result: { created: boolean }) => {
       if (result?.created) {

@@ -1,6 +1,8 @@
-<h1>Kalendarz</h1>
-<h3>{{monthNames[currentMonth]}} {{currentYear}}</h3>
-<div class="flex flex-row">
+<div class="mx-20">
+    <span class="text-6xl">Kalendarz</span>
+    <h3>{{monthNames[currentMonth]}} {{currentYear}}</h3>
+</div>
+<div class="flex flex-row mx-20">
     <button mat-mini-fab (click)="changeMonth(-1)"><mat-icon>arrow_left</mat-icon></button>
     <span class="flex-1"></span>
     <button mat-button (click)="addEvent()">Dodaj wydarzenie</button>
@@ -11,7 +13,7 @@
 </div>
 
 
-<div class="grid grid-cols-7 gap-2 mt-4">
+<div class="grid grid-cols-7 gap-2 mt-4 mx-20">
     <div>Poniedziałek</div>
     <div>Wtorek</div>
     <div>Środa</div>
@@ -25,23 +27,23 @@
     <div></div>
     }
     @else {
-    <mat-card class="{{day.isToday ? ('!bg-green-200') : ''}}">
-        <mat-card-header>
-            <mat-card-title>
-                <p class="text-md">{{day.day}}</p>
-            </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <mat-chip-set>
+        <mat-card class="{{day.isToday ? ('!bg-green-200') : ''}} min-h-[120px]">
+            <mat-card-header>
+                <mat-card-title>
+                    <p class="text-md">{{day.day}}</p>
+                </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <mat-chip-set>
 
-                @for(event of day.events; track $index) {
-                <mat-chip (click)="openEventDetails(event)">
-                    {{event.title}}
-                </mat-chip>
-                }
-            </mat-chip-set>
-        </mat-card-content>
-    </mat-card>
+                    @for(event of day.events; track $index) {
+                    <mat-chip (click)="openEventDetails(event)">
+                        {{event.title}}
+                    </mat-chip>
+                    }
+                </mat-chip-set>
+            </mat-card-content>
+        </mat-card>
     }
     }
 </div>

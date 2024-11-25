@@ -1,18 +1,23 @@
-<!-- <div class="h-[1000px]"> -->
-<div class="flex">
+@if(loading) {
+<div class="flex justify-center items-center h-[100vh]">
+    <mat-spinner></mat-spinner>
+</div>
+}
+@else {
+<div class="flex px-2 pb-2">
     @if(piece.audioFileUrl){
     <audio src="{{piece.audioFileUrl}}" controls></audio>
     }
     @if(piece.audioLink != null && piece.audioLink != "" && piece.audioLink != undefined) {
-        <a href="{{piece.audioLink}}">Nagranie</a>
+    <a href="{{piece.audioLink}}">Nagranie</a>
     }
 </div>
 @if(piece.fileUrl || piece.imageUrls && piece.imageUrls.length > 0) {
 <span class="flex items-center">
     <button mat-mini-fab (click)="previousPage()"><mat-icon>arrow_left</mat-icon></button>
     <span class="flex-1">
-        <mat-slide-toggle [(ngModel)]="isErasing">Enable eraser</mat-slide-toggle>
-        <button mat-button (click)="saveDrawings()">Save</button>
+        <span class="ml-10"></span>
+        <mat-slide-toggle [(ngModel)]="isErasing">Gumka do ścierania</mat-slide-toggle>
     </span>
     {{currentPage}} / {{pageCount}}
     <span class="flex-1"></span>
@@ -29,10 +34,11 @@
 </div>
 }
 @else {
-<div #imageContainer class="h-[150vh] mt-4 pdf-container">
-    <img [src]="currentImageUrl" class="h-full" />
+<div class="h-[150vh] mt-4 pdf-container imageContainer">
+    <img [src]="currentImageUrl" class="h-full !z-[-100]" />
     <canvas #drawingCanvas class="pdf-canvas"></canvas>
     <canvas #cursorCanvas class="pdf-canvas"></canvas>
 </div>
+}
 }
 }

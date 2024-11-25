@@ -1,4 +1,4 @@
-<div class="h-full mx-40 shadow-md px-10 py-6">
+<div class="h-full min-h-full mx-40 shadow-md px-10 py-6">
     @if(loading) {
     <h2>Utwory</h2>
     <div class="flex items-center justify-center h-full">
@@ -16,7 +16,7 @@
         }
     </div>
     @if(pieces && pieces.length > 0) {
-    <div class="flex gap-4 flex-row flex-wrap justify-center">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,300px))] justify-center gap-4">
         @for (piece of pieces; track piece.id) {
         <app-piece (onDelete)="deletePiece($event)" [piece]="piece"></app-piece>
         }

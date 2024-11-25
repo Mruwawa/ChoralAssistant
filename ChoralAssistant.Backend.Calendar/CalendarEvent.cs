@@ -23,4 +23,12 @@ namespace ChoralAssistant.Backend.Calendar
         public string Id { get; set; }
         public string Title { get; set; }
     }
+
+    public static class PiecesExtensions
+    {
+        public static string ToString(this Piece piece)
+        {
+            return $"{piece.Id}|{piece.Title}";
+        }
+    }
 }

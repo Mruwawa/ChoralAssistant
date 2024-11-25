@@ -22,13 +22,17 @@ export class PieceListComponent {
     thumbnailUrl: string;
   }[] = [];
 
-  loading : boolean = true;
+  loading: boolean = true;
 
   private pieceStorageService = inject(PieceStorageService);
 
   private dialog = inject(MatDialog);
 
   ngOnInit() {
+    this.loadPieces();
+  }
+
+  loadPieces() {
     const pieces = this.pieceStorageService.getAllPieces();
 
     pieces.subscribe(
@@ -40,10 +44,23 @@ export class PieceListComponent {
   }
 
   addDocument() {
-    this.dialog.open(FileUploadComponent,
+    const dialogRef = this.dialog.open(FileUploadComponent,
       {
         width: '70%',
-        height: '70%'
+        height: '50%'
+      }
+    );
+
+    dialogRef.afterClosed().subscribe(
+      {
+        next: (result) => {
+          if (result) {
+            this.loadPieces();
+          }
+        },
+        error: (error) => {
+          console.error('Error adding document', error);
+        }
       }
     );
   }

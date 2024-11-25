@@ -7,6 +7,7 @@ using Ical.Net.Serialization;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ChoralAssistant.Backend.Calendar
 {
@@ -40,7 +41,7 @@ namespace ChoralAssistant.Backend.Calendar
             {
                 DtStart = new CalDateTime(e.Start),
                 DtEnd = new CalDateTime(e.End),
-                Description = e.Description,
+                Description = e.Description + (e.Pieces.Count != 0 ? $"Pieces: {{{string.Join(',', e.Pieces.Select(SerializePiece))}}}" : ""),
                 Location = e.Location,
                 Summary = e.Title
             }).ToList();
@@ -50,6 +51,11 @@ namespace ChoralAssistant.Backend.Calendar
             var serializedCalendar = serializer.SerializeToString(calendar);
 
             return Encoding.UTF8.GetBytes(serializedCalendar);
+        }
+
+        private string SerializePiece(Piece piece)
+        {
+            return $"{piece.Id}|{piece.Title}";
         }
 
         public async Task<List<CalendarEvent>> GetEvents(DateTime start, DateTime end)
@@ -74,6 +80,23 @@ namespace ChoralAssistant.Backend.Calendar
                 Location = e.Location,
                 Title = e.Summary
             }).ToList();
+
+            var serializedPiecesPattern = @"Pieces: \{(.*)\}";
+            var serializedPiecesRegex = new Regex(serializedPiecesPattern);
+
+            for (int i = 0; i < events.Count; i++)
+            {
+                var ev = events[i];
+                var match = serializedPiecesRegex.Match(ev.Description);
+                if (match.Success)
+                {
+                    var serializedPieces = match.Groups[1].Value;
+                    var pieces = serializedPieces.Split(',');
+                    ev.Pieces = pieces.Select(p => new Piece { Id = p.Split('|')[0], Title = p.Split('|')[1] }).ToList();
+                    ev.Description = ev.Description.Replace(match.Value, "");
+                }
+
+            }
 
             foreach (var e in events)
             {

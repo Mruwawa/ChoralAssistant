@@ -1,4 +1,4 @@
-import { Component, importProvidersFrom, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CalendarService } from '../../Services/calendar.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormGroup, FormControl } from '@angular/forms';
@@ -7,17 +7,17 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatNativeDateModule } from '@angular/material/core';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatIcon } from '@angular/material/icon';
-import { MatSelectionListChange } from '@angular/material/list';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
 import { PieceStorageService } from '../../Services/piece-storage.service';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-add-event',
   standalone: true,
-  imports: [MatFormFieldModule, MatInputModule, MatDatepickerModule, ReactiveFormsModule, MatNativeDateModule, MatChipsModule, MatIcon, MatSelectModule, FormsModule],
+  imports: [MatFormFieldModule, MatInputModule, MatDatepickerModule, ReactiveFormsModule, MatNativeDateModule, MatChipsModule, MatIcon, MatSelectModule, FormsModule, MatButtonModule],
   templateUrl: './add-event.component.html',
   styleUrl: './add-event.component.scss'
 })

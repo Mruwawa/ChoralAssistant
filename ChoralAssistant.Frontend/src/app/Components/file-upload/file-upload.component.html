@@ -1,34 +1,72 @@
-<div class="p-4">
-    <h2>Nowy utwór</h2>
-    <label for="pieceName">Nazwa utworu</label>
-    <input type="text" id="pieceName" [(ngModel)]="pieceName" required>
+@if(saving) {
+<div class="p-4 flex flex-row items-center justify-center h-full gap-4">
+    <mat-spinner diameter="50"></mat-spinner>
+    <span class="text-2xl">Zapisywanie utworu...</span>
+</div>
+}
+@else{
+
+<div class="p-4 flex flex-col">
+    <h3>Nowy utwór</h3>
+    <mat-form-field>
+        <mat-label for="pieceName">Nazwa utworu</mat-label>
+        <input matInput type="text" id="pieceName" [(ngModel)]="pieceName" required>
+    </mat-form-field>
     <mat-tab-group [(selectedIndex)]="fileTabIndex">
         <mat-tab label="Plik PDF">
-            <label for="pdfFile">Plik PDF z nutami</label>
-            <input type="file" class="file-input" (change)="onPDFFileSelected($event)" #pdfFile accept=".pdf"
-                id="pdfFile" />
+            <div class="flex flex-row gap-2 items-center p-2">
+                <input type="file" class="hidden" (change)="onPDFFileSelected($event)" #pdfFile accept=".pdf"
+                    id="pdfFile" />
+                @if(pdfFileSelected == '') {
+                <button mat-button (click)="pdfFile.click()">Wybierz plik</button>
+                }
+                @else {
+                <span>Wybrano: {{pdfFileSelected}}</span>
+                <button mat-button (click)="pdfFile.click()">Zmień</button>
+                }
+            </div>
         </mat-tab>
         <mat-tab label="Obrazy">
-            <h2>Dodaj obazy</h2>
-            <label for="imageFiles">Obrazy z nutami</label>
-            <input type="file" class="file-input" (change)="onImageFilesSelected($event)" #imageFiles accept="image/*"
-                multiple id="imageFiles" />
+            <div class="flex flex-row gap-2 items-center p-2">
+                <input type="file" class="hidden" (change)="onImageFilesSelected($event)" #imageFiles accept="image/*"
+                    multiple id="imageFiles" />
+                @if(imageFilesSelectedCount == 0) {
+                <button mat-button (click)="imageFiles.click()">Wybierz pliki</button>
+                }
+                @else {
+                <span>Liczba wybranych plików: {{imageFilesSelectedCount}}</span>
+                <button mat-button (click)="imageFiles.click()">Zmień pliki</button>
+                }
+            </div>
         </mat-tab>
     </mat-tab-group>
     <mat-tab-group [(selectedIndex)]="audioTabIndex">
         <mat-tab label="Plik audio">
-            <label for="audioFile">Plik audio</label>
-            <input type="file" accept="audio/*" (change)="onAudioFileSelected($event)">
+            <div class="flex flex-row gap-2 items-center p-2">
+                <input type="file" class="hidden" accept="audio/*" (change)="onAudioFileSelected($event)" #audioFile>
+                @if(audioFileSelected == '') {
+                <button mat-button (click)="audioFile.click()">Wybierz plik</button>
+                }
+                @else {
+                <span>Wybrano: {{audioFileSelected}}</span>
+                <button mat-button (click)="audioFile.click()">Zmień</button>
+                }
+            </div>
         </mat-tab>
         <mat-tab label="Link do nagrania">
-            <label for="audioLink">Link do nagrania</label>
-            <input type="text" id="audioLink" [(ngModel)]="audioLink">
+            <mat-form-field class="py-2 !flex !flex-row">
+                <mat-label for="audioLink">Link do nagrania</mat-label>
+                <input class="w-full" matInput type="text" id="audioLink" [(ngModel)]="audioLink">
+            </mat-form-field>
         </mat-tab>
     </mat-tab-group>
 
     @if(errorMessage){
-    <div>{{errorMessage}}</div>
+    <div class="text-[#ba1a1a]">{{errorMessage}}</div>
     }
 
-    <button (click)="submitPiece()">Dodaj utwór</button>
+    <div class="absolute bottom-0 right-0 p-10">
+        <button mat-flat-button (click)="submitPiece()">Dodaj utwór</button>
+    </div>
 </div>
+}

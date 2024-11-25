@@ -4,10 +4,11 @@ import { PieceListComponent } from './Components/piece-list/piece-list.component
 import { ViewPieceComponent } from './Components/view-piece/view-piece.component';
 import { CalendarComponent } from './Components/calendar/calendar.component';
 import { authGuard } from './Guards/auth.guard';
+import { saveDrawingGuard } from './Guards/save-drawing.guard';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },
     { path: 'utwory', component: PieceListComponent, canActivate: [authGuard] },
-    { path: 'utwor/:id', component: ViewPieceComponent, canActivate: [authGuard] },
+    { path: 'utwor/:id', component: ViewPieceComponent, canActivate: [authGuard], canDeactivate: [saveDrawingGuard] },
     { path: 'kalendarz', component: CalendarComponent, canActivate: [authGuard] }
 ];

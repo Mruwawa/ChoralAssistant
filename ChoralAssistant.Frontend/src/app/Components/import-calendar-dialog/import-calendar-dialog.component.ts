@@ -18,11 +18,14 @@ export class ImportCalendarDialogComponent {
 
   httpClient: HttpClient = inject(HttpClient);
 
+  calendarFileName: string = '';
+
 
   onFileChange(event: any) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.calendarFile = input.files[0];
+      this.calendarFileName = this.calendarFile.name;
     };
   }
 

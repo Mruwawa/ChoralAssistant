@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, ViewChild } from '@angular/core';
 import { PieceViewModel } from '../../Models/piece-view-model';
 import { ActivatedRoute } from '@angular/router';
 import { PieceStorageService } from '../../Services/piece-storage.service';
@@ -8,11 +8,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-view-piece',
   standalone: true,
-  imports: [PdfViewerModule, MatIconModule, MatButtonModule, MatSlideToggleModule, FormsModule],
+  imports: [PdfViewerModule, MatIconModule, MatButtonModule, MatSlideToggleModule, FormsModule, MatProgressSpinner],
   templateUrl: './view-piece.component.html',
   styleUrl: './view-piece.component.scss'
 })
@@ -21,7 +22,7 @@ export class ViewPieceComponent {
   pieceId!: string;
 
   @ViewChild('pdfContainer', { static: false }) pdfContainer!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('imageContainer', { static: false }) imageContainer!: ElementRef<HTMLDivElement>;
+  // @ViewChild('imageContainer', { static: false }) imageContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('drawingCanvas', { static: false }) drawingCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('cursorCanvas', { static: false }) cursorCanvas!: ElementRef<HTMLCanvasElement>;
 
@@ -33,11 +34,16 @@ export class ViewPieceComponent {
   pageCount: number = 0;
   currentPage: number = 1;
 
+  loading: boolean = true;
+
   private drawingCanvasContext!: CanvasRenderingContext2D;
   private cursorCanvasContext!: CanvasRenderingContext2D;
   private lastX = 0;
   private lastY = 0;
   private eraserSize: number = 50;
+
+  private autoSaveTimeoutMs: number = 5000;
+  private autoSaveIntervalId: any;
 
   isErasing: boolean = false;
   private mouseDown: boolean = false;
@@ -45,6 +51,64 @@ export class ViewPieceComponent {
   private savedDrawings: Record<number, string> = {};
 
   currentImageUrl: SafeResourceUrl = '';
+
+  constructor(route: ActivatedRoute) {
+    route.params.subscribe(params => {
+      this.pieceId = params['id'];
+
+      this.piece = {
+        id: "",
+        name: "",
+        type: "",
+        imageUrls: [],
+        fileUrl: "",
+        audioFileUrl: "",
+        audioLink: ""
+      };
+
+      this.pieceStorageService.getPiece(this.pieceId)
+        .then((piece) => {
+          if (piece == null) {
+            return;
+          }
+          this.piece = piece;
+          this.loading = false;
+
+          if (this.piece.type == 'image') {
+            this.currentImageUrl = this.piece.imageUrls[this.currentPage - 1];
+            this.pageCount = this.piece.imageUrls.length;
+            this.waitForImageToLoad();
+          }
+          this.autoSaveIntervalId = window.setInterval(() => {
+            this.saveDrawings()
+          }
+            , this.autoSaveTimeoutMs);
+        });
+
+    });
+  }
+
+  waitForImageToLoad() {
+    let imageEl = document.querySelector(".imageContainer");
+    if (imageEl == null) {
+      window.setTimeout(() => this.waitForImageToLoad(), 100);
+      return;
+    }
+    console.log("Image loaded", imageEl);
+    this.afterViewLoaded(imageEl as HTMLDivElement);
+  }
+
+  @HostListener('window:beforeunload')
+  unload() {
+    window.clearInterval(this.autoSaveIntervalId);
+    this.saveDrawings();
+  }
+
+  canDeactivate() {
+    window.clearInterval(this.autoSaveIntervalId);
+    this.saveDrawings();
+    return true;
+  }
 
   saveDrawings() {
     this.saveCanvas();
@@ -108,42 +172,13 @@ export class ViewPieceComponent {
   changePage(page: number) {
     this.saveCanvas();
     this.currentPage = page;
+    this.currentImageUrl = this.piece.imageUrls[this.currentPage - 1];
     this.restoreCanvas(page);
   }
 
   pdfLoaded(event: any) {
     this.pageCount = event._pdfInfo.numPages
     this.afterViewLoaded(this.pdfContainer.nativeElement);
-  }
-
-  constructor(route: ActivatedRoute) {
-    route.params.subscribe(params => {
-      this.pieceId = params['id'];
-
-      this.piece = {
-        id: "",
-        name: "",
-        type: "",
-        imageUrls: [],
-        fileUrl: "",
-        audioFileUrl: "",
-        audioLink: ""
-      };
-
-      this.pieceStorageService.getPiece(this.pieceId)
-        .then((piece) => {
-          if (piece == null) {
-            return;
-          }
-          this.piece = piece;
-
-          if (this.piece.type == 'image') {
-            this.currentImageUrl = this.piece.imageUrls[this.currentPage - 1];
-            this.afterViewLoaded(this.imageContainer.nativeElement);
-          }
-        });
-
-    });
   }
 
   afterViewLoaded(containerElement: HTMLCanvasElement | HTMLDivElement) {
