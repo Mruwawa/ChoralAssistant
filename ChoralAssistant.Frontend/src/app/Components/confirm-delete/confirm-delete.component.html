@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>Usuwanie</h2>
+<mat-dialog-content>
+    <p>Czy napewno chcesz usunąć {{entityName}} ? </p>
+</mat-dialog-content>
+<mat-dialog-actions class="flex gap-4">
+    <button mat-button cdkFocusInitial (click)="no()">Nie</button>
+    <button mat-button (click)="yes()">Tak</button>
+</mat-dialog-actions>

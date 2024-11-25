@@ -1,0 +1,28 @@
+<div class="flex flex-col items-center justify-center p-10">
+    <button mat-icon-button class="absolute right-4 top-4" (click)="removeEvent()"><mat-icon>delete</mat-icon></button>
+    <h2>{{eventDetails.title}}</h2>
+    @if(eventDetails.description) {
+    <p>{{eventDetails.description}}</p>
+    }
+    @if(eventDetails.location) {
+    <p>{{eventDetails.location}}</p>
+    }
+    <p>
+        @if(eventDetails.start === eventDetails.end) {
+        {{eventDetails.start | date: 'dd.MM.yyyy'}}
+        }
+        @else{
+        {{eventDetails.start | date: 'dd.MM.yyyy'}} -
+        {{eventDetails.end | date: 'dd.MM.yyyy'}}
+        }
+    </p>
+    <div class="flex flex-row items-center justify-center gap-2">
+        <span>Utwory:
+        </span>
+        <mat-chip-set>
+            @for(piece of eventDetails.pieces; track $index) {
+            <mat-chip [routerLink]="'utwor/'+piece.id" (click)="close()"> {{piece.title}}</mat-chip>
+            }
+        </mat-chip-set>
+    </div>
+</div>

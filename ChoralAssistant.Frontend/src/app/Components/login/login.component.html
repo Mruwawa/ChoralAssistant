@@ -1,0 +1,6 @@
+@if(userInfo().isAuthorized) {
+<button mat-raised-button (click)="logout()">Wyloguj się</button>
+}
+@else if(!disabledOnLoggedOut) {
+<button mat-raised-button (click)="login()">Zaloguj się</button>
+}

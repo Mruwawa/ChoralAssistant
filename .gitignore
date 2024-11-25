@@ -45,3 +45,10 @@ ChoralAssistant.Backend/obj
 ChoralAssistant.Frontend/.angular
 ChoralAssistant.Frontend/.vscode
 ChoralAssistant.Frontend/node_modules
+ChoralAssistant.Backend/bin
+ChoralAssistant.Backend.Authorization/bin
+ChoralAssistant.Backend.Authorization/obj
+ChoralAssistant.Backend.Calendar/bin
+obj/
+ChoralAssistant.Frontend/.env
+bin/

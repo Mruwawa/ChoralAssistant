@@ -1,0 +1,21 @@
+<mat-card class="max-w-[300px] min-w-[300px]">
+    <mat-card-header class="!pr-1">
+        <mat-card-title>{{piece.name}}</mat-card-title>
+        <span class="flex-1"></span>
+        <button class="" mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="deletePiece()">
+                <mat-icon>delete</mat-icon>
+                <span>Usuń</span>
+            </button>
+        </mat-menu>
+    </mat-card-header>
+    <img class="max-h-[200px] object-cover" mat-card-image src="{{piece.thumbnailUrl}}" alt="Piece thumbnail">
+    <mat-card-content>
+        <p class="pt-2">
+        </p>
+    </mat-card-content>
+    <mat-card-actions>
+        <button mat-button [routerLink]="['/utwor', piece.id]">Otwórz</button>
+    </mat-card-actions>
+</mat-card>
