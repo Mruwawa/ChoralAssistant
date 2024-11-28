@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChoralAssistant.Backend", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChoralAssistant.Backend.Authorization", "..\ChoralAssistant.Backend.Authorization\ChoralAssistant.Backend.Authorization.csproj", "{7E2946BD-462A-4F2F-BB3F-ADAC00D75824}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChoralAssistant.Storage", "..\ChoralAssistant.Storage\ChoralAssistant.Storage.csproj", "{75A52AF5-02D4-4ECC-8EB7-B9A124E16A75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChoralAssistant.Backend.Storage", "..\ChoralAssistant.Storage\ChoralAssistant.Backend.Storage.csproj", "{75A52AF5-02D4-4ECC-8EB7-B9A124E16A75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChoralAssistant.Backend.Calendar", "..\ChoralAssistant.Backend.Calendar\ChoralAssistant.Backend.Calendar.csproj", "{67752E1F-436C-4F76-B2E0-C259D4AF4F27}"
 EndProject

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CalendarEvent } from '../../Models/calendar-event';
+import { CalendarEvent } from '../../../Models/calendar-event';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DialogRef } from '@angular/cdk/dialog';
 import { DatePipe } from '@angular/common';

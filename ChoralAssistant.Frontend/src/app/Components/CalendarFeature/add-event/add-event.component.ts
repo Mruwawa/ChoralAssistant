@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CalendarService } from '../../Services/calendar.service';
+import { CalendarService } from '../../../Services/calendar.service';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormGroup, FormControl } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -11,7 +11,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatIcon } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { FormsModule } from '@angular/forms';
-import { PieceStorageService } from '../../Services/piece-storage.service';
+import { PieceStorageService } from '../../../Services/piece-storage.service';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
@@ -37,16 +37,11 @@ export class AddEventComponent {
     end: new FormControl<Date | null>(null),
   });
 
-  availableOptions: { id: string, title: string }[] =
-    [
-      { id: '827r3gweafyas', title: 'Gloria' },
-      { id: '23gtfewrgvf', title: 'Toto Africa' },
-      { id: 'c346awe5trdfg', title: 'Alleluia' },
-      { id: 'c3sve7yhrdgfsd', title: 'Dulaman' },
-    ];
+  availableOptions: { id: number, title: string }[] =
+    [];
 
   // Selected options to display as chips
-  selectedPieces: { id: string, title: string }[] = [];
+  selectedPieces: { id: number, title: string }[] = [];
 
   // FormControl for the mat-select
   selectControl = new FormControl();
@@ -55,9 +50,9 @@ export class AddEventComponent {
   readonly formControl = new FormControl(['angular']);
 
   ngOnInit() {
-    this.storageService.getAllPiecesMinimal().subscribe({
+    this.storageService.listAllPieces().subscribe({
       next: (pieces) => {
-        this.availableOptions = pieces;
+        this.availableOptions = pieces.map(piece => ({ id: piece.pieceId, title: piece.title }));
       },
       error: (error) => {
         console.error(error);
@@ -66,7 +61,7 @@ export class AddEventComponent {
   }
 
 
-  removeOption(option: { id: string, title: string }): void {
+  removeOption(option: { id: number, title: string }): void {
     const index = this.selectedPieces.findIndex(piece => piece.id === option.id);
 
     if (index >= 0) {

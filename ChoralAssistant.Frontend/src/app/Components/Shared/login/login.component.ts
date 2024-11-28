@@ -1,6 +1,6 @@
 import { Component, computed, inject, Input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { AuthorizationService } from '../../Services/authorization.service';
+import { AuthorizationService } from '../../../Services/authorization.service';
 import { Router } from '@angular/router';
 
 @Component({

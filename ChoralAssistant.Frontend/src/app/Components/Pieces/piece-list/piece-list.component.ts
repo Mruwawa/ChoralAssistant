@@ -1,12 +1,13 @@
 import { Component, inject } from '@angular/core';
-import { PieceViewModel } from '../../Models/piece-view-model';
+import { PieceViewModel } from '../../../Models/piece-view-model';
 import { PieceComponent } from "../piece/piece.component";
-import { PieceStorageService } from '../../Services/piece-storage.service';
+import { PieceStorageService } from '../../../Services/piece-storage.service';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PieceListing } from '../../../Models/piece-listing';
 
 @Component({
   selector: 'app-piece-list',
@@ -16,11 +17,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   styleUrl: './piece-list.component.scss'
 })
 export class PieceListComponent {
-  pieces: {
-    id: string;
-    name: string;
-    thumbnailUrl: string;
-  }[] = [];
+  pieces: PieceListing[] = [];
 
   loading: boolean = true;
 
@@ -33,7 +30,7 @@ export class PieceListComponent {
   }
 
   loadPieces() {
-    const pieces = this.pieceStorageService.getAllPieces();
+    const pieces = this.pieceStorageService.listAllPieces();
 
     pieces.subscribe(
       value => {
@@ -47,7 +44,7 @@ export class PieceListComponent {
     const dialogRef = this.dialog.open(FileUploadComponent,
       {
         width: '70%',
-        height: '50%'
+        height: '60%'
       }
     );
 
@@ -65,12 +62,12 @@ export class PieceListComponent {
     );
   }
 
-  deletePiece(pieceId: string) {
+  deletePiece(pieceId: number) {
     this.pieceStorageService.deleteFile(pieceId)
       .subscribe(
         {
           next: () => {
-            this.pieces = this.pieces.filter(piece => piece.id !== pieceId);
+            this.pieces = this.pieces.filter(piece => piece.pieceId !== pieceId);
           },
           error: (error) => {
             console.error('Error deleting piece', error);

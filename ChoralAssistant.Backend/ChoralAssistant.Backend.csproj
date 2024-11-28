@@ -4,7 +4,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
     <SpaRoot>../ChoralAssistant.Frontend</SpaRoot>
     <SpaProxyServerUrl>http://localhost:4200</SpaProxyServerUrl>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
@@ -21,7 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ChoralAssistant.Backend.Authorization\ChoralAssistant.Backend.Authorization.csproj" />
     <ProjectReference Include="..\ChoralAssistant.Backend.Calendar\ChoralAssistant.Backend.Calendar.csproj" />
-    <ProjectReference Include="..\ChoralAssistant.Storage\ChoralAssistant.Storage.csproj" />
+    <ProjectReference Include="..\ChoralAssistant.Storage\ChoralAssistant.Backend.Storage.csproj" />
   </ItemGroup>  
 
   <ItemGroup>

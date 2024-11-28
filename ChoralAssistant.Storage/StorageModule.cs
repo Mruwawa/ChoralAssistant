@@ -1,4 +1,6 @@
-﻿using ChoralAssistant.Storage.Features.PieceStorage;
+﻿using ChoralAssistant.Backend.Storage.Features.PieceStorage;
+using ChoralAssistant.Backend.Storage.Models;
+using ChoralAssistant.Storage.Features.PieceStorage;
 using ChoralAssistant.Storage.Infrastructure;
 using ChoralAssistant.Storage.Models;
 using Microsoft.AspNetCore.Builder;
@@ -12,115 +14,119 @@ namespace ChoralAssistant.Storage
     {
         public static void AddStorageModule(this IServiceCollection services)
         {
-            services.AddTransient<IPieceStorageService, StorageService>();
+            services.AddTransient<IStorageService, StorageService>();
             services.AddTransient<IFileRepository, GoogleStorageRepository>();
-            services.AddSingleton<ISqlRepository, InMemorySQLRepo>();
+            services.AddTransient<ISqlRepository, MSSQLRepository>();
+            services.AddSingleton<InMemorySQLRepo>();
+            services.AddTransient<IPieceUploadModelBuilder, PieceUploadModelBuilder>();
+            services.AddTransient<IPieceStorageService, PieceStorageService>();
+            services.AddTransient<IFileUploadFactory, FileUploadFactory>();
         }
 
         public static void RegisterStorageEndpoints(this IEndpointRouteBuilder routes)
         {
             routes.MapPost("api/upload-piece",
-                async (HttpContext context, IPieceStorageService pieceStorageService) =>
+                async (HttpContext context, IPieceUploadModelBuilder pieceUploadModelBuilder, IPieceStorageService pieceStorageService) =>
                 {
 
                     var form = await context.Request.ReadFormAsync();
 
-                    if (!form.TryGetValue("pieceName", out var pieceName))
+                    if (form.Count == 0)
                     {
                         context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        await context.Response.WriteAsync("Piece name is required");
+                        await context.Response.WriteAsync("No form data found");
                         return;
                     }
 
-                    if (!form.TryGetValue("fileType", out var fileType))
+                    try
+                    {
+                        var uploadModel = pieceUploadModelBuilder.BuildPieceUploadModel(form);
+                        var pieceListing = await pieceStorageService.CreatePiece(uploadModel);
+                        context.Response.StatusCode = StatusCodes.Status201Created;
+                        await context.Response.WriteAsJsonAsync(pieceListing);
+
+                    }
+                    catch (Exception e)
                     {
                         context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        await context.Response.WriteAsync("File type is required");
+                        await context.Response.WriteAsync(e.Message);
                         return;
                     }
 
-                    var files = form.Files.GetFiles("files");
-
-                    if (files == null || files.Count < 1)
-                    {
-                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        await context.Response.WriteAsync("File input is required");
-                        return;
-                    }
-
-                    switch (fileType)
-                    {
-                        case "pdf":
-                            {
-                                
-                                break;
-                            }
-                        case "image":
-                            {
-                                break;
-                            }
-                        default:
-                            {
-                                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                                await context.Response.WriteAsync("Invalid file type");
-                                return;
-                            }
-                    }
-
-                    var uploadModel = new PieceUploadModel
-                    {
-                        PieceName = form["pieceName"]!,
-                        FileType = form["fileType"]!,
-                        Files = form.Files.GetFiles("files").ToList(),
-                        AudioFile = form.Files.GetFile("audioFile")!,
-                        AudioLink = form.TryGetValue("audioUrl", out var audioLink) ? audioLink : ""
-                    };
-
-                    await pieceStorageService.UploadFile(uploadModel);
                 });
 
-            routes.MapGet("api/get-all-pieces",
+            routes.MapGet("api/list-pieces",
                 async (HttpContext context, IPieceStorageService pieceStorageService) =>
                 {
-
-                    var pieces = await pieceStorageService.GetAllPieces();
-
-                    await context.Response.WriteAsJsonAsync(pieces);
+                    var pieceListings = await pieceStorageService.GetPieceList();
+                    await context.Response.WriteAsJsonAsync(pieceListings);
                 });
 
-            routes.MapGet("api/get-piece/{folderId}", async(HttpContext context ,IPieceStorageService pieceStorageService, string folderId) => { 
-                var piece = await pieceStorageService.GetPiece(folderId);
+            routes.MapGet("api/get-piece/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
+            {
+                var piece = await pieceStorageService.GetPiece(pieceId);
                 await context.Response.WriteAsJsonAsync(piece);
             });
 
-            routes.MapGet("api/download-file/{fileId}",
-                async (HttpContext context, IPieceStorageService pieceStorageService, string fileId) =>
+            routes.MapGet("api/download-notes-file/{pieceId}",
+                async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
                 {
-                    var authToken = context.Request.Cookies["AccessToken"];
-                    var pieces = await pieceStorageService.DownloadFile(fileId);
-
-                    return Results.File(pieces.fileContent, pieces.mimeType, pieces.fileName);
+                    var notesFile = await pieceStorageService.GetNotesFile(pieceId);
+                    return Results.File(notesFile.Content, notesFile.MimeType, notesFile.Name);
                 });
 
-            routes.MapPost("api/save-drawings/{fileId}",
-                async (HttpContext context, IPieceStorageService pieceStorageService, string fileId) =>
+            routes.MapGet("api/download-notes-page-file/{pieceId}/{page}",
+                async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId, int page) =>
                 {
-                    pieceStorageService.SaveDrawings(fileId, await context.Request.ReadFromJsonAsync<Drawings>());
+                    var pageFile = await pieceStorageService.GetNotesPageImageFile(pieceId, page);
+                    return Results.File(pageFile.Content, pageFile.MimeType, pageFile.Name);
                 });
 
-            routes.MapGet("api/get-drawings/{fileId}",
-                async (HttpContext context, IPieceStorageService pieceStorageService, string fileId) =>
+            routes.MapGet("api/download-audio-file/{pieceId}",
+                async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
                 {
-                    var drawings = pieceStorageService.GetDrawings(fileId);
-                    await context.Response.WriteAsJsonAsync(drawings);
+                    var audioFile = await pieceStorageService.GetAudioFile(pieceId);
+                    if (audioFile != null)
+                    {
+                        return Results.File(audioFile.Content, audioFile.MimeType, audioFile.Name);
+                    }
+                    else
+                    {
+                        return Results.NotFound("Audio file not found");
+                    }
                 });
 
-            routes.MapGet("api/get-all-pieces-minimal", async (HttpContext context, IPieceStorageService pieceStorageService) => { 
-                var pieces = await pieceStorageService.GetAllPiecesMinimal();
-                await context.Response.WriteAsJsonAsync(pieces);
-            });
+            routes.MapPost("api/save-drawings/{pieceId}/{page}",
+                async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId, int page) =>
+                {
+                    var form = await context.Request.ReadFormAsync();
+                    var drawingsFile = form.Files["drawings"];
 
-            routes.MapDelete("api/delete-piece/{fileId}", async (HttpContext context, IPieceStorageService pieceStorageService, string fileId) =>
+                    if (drawingsFile == null)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        await context.Response.WriteAsync("No drawings file found");
+                        return;
+                    }
+
+                    await pieceStorageService.UploadDrawingsFile(drawingsFile, pieceId, page);
+                });
+
+            routes.MapGet("api/get-drawings/{pieceId}/{page}",
+                async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId, int page) =>
+                {
+                    var drawingsFile = await pieceStorageService.GetDrawingsFile(pieceId, page);
+                    if (drawingsFile != null)
+                    {
+                        return Results.File(drawingsFile.Content, drawingsFile.MimeType, drawingsFile.Name);
+                    }
+                    else
+                    {
+                        return Results.NotFound("Drawings file not found");
+                    }
+                });
+
+            routes.MapDelete("api/delete-piece/{fileId}", async (HttpContext context, IStorageService pieceStorageService, string fileId) =>
             {
                 await pieceStorageService.DeletePiece(fileId);
             });

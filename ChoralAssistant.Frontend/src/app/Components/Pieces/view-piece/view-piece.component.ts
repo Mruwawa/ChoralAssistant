@@ -1,7 +1,7 @@
-import { Component, ElementRef, HostListener, inject, ViewChild } from '@angular/core';
-import { PieceViewModel } from '../../Models/piece-view-model';
+import { Component, computed, effect, ElementRef, HostListener, inject, Signal, signal, ViewChild, WritableSignal } from '@angular/core';
+import { PieceViewModel } from '../../../Models/piece-view-model';
 import { ActivatedRoute } from '@angular/router';
-import { PieceStorageService } from '../../Services/piece-storage.service';
+import { PieceStorageService } from '../../../Services/piece-storage.service';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { firstValueFrom } from 'rxjs';
+import { Piece } from '../../../Models/piece';
 
 @Component({
   selector: 'app-view-piece',
@@ -18,23 +20,24 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
   styleUrl: './view-piece.component.scss'
 })
 export class ViewPieceComponent {
-  piece!: PieceViewModel
-  pieceId!: string;
+  piece!: Piece
+  pieceId!: number;
 
   @ViewChild('pdfContainer', { static: false }) pdfContainer!: ElementRef<HTMLCanvasElement>;
-  // @ViewChild('imageContainer', { static: false }) imageContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('drawingCanvas', { static: false }) drawingCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('cursorCanvas', { static: false }) cursorCanvas!: ElementRef<HTMLCanvasElement>;
 
   pieceStorageService: PieceStorageService = inject(PieceStorageService);
   sanitizer: DomSanitizer = inject(DomSanitizer);
+  route: ActivatedRoute = inject(ActivatedRoute);
 
-  pdfData!: Blob | null;
-
-  pageCount: number = 0;
   currentPage: number = 1;
 
   loading: boolean = true;
+
+  imageUrls: SafeResourceUrl[] = [];
+  pdfUrl: string = '';
+  audioUrl: SafeResourceUrl = '';
 
   private drawingCanvasContext!: CanvasRenderingContext2D;
   private cursorCanvasContext!: CanvasRenderingContext2D;
@@ -48,44 +51,71 @@ export class ViewPieceComponent {
   isErasing: boolean = false;
   private mouseDown: boolean = false;
 
-  private savedDrawings: Record<number, string> = {};
+  private savedDrawings: { page: number, content: Blob | null, loading: WritableSignal<boolean> }[] = [];
 
   currentImageUrl: SafeResourceUrl = '';
 
-  constructor(route: ActivatedRoute) {
-    route.params.subscribe(params => {
-      this.pieceId = params['id'];
+  async ngOnInit() {
+    this.pieceId = this.route.snapshot.params['id'];
+    this.piece = await firstValueFrom(this.pieceStorageService.getPiece(this.pieceId));
+    this.loadPages();
+    this.getDrawings();
+    this.loadAudioFile();
+  }
 
-      this.piece = {
-        id: "",
-        name: "",
-        type: "",
-        imageUrls: [],
-        fileUrl: "",
-        audioFileUrl: "",
-        audioLink: ""
-      };
-
-      this.pieceStorageService.getPiece(this.pieceId)
-        .then((piece) => {
-          if (piece == null) {
-            return;
-          }
-          this.piece = piece;
-          this.loading = false;
-
-          if (this.piece.type == 'image') {
-            this.currentImageUrl = this.piece.imageUrls[this.currentPage - 1];
-            this.pageCount = this.piece.imageUrls.length;
-            this.waitForImageToLoad();
-          }
-          this.autoSaveIntervalId = window.setInterval(() => {
-            this.saveDrawings()
-          }
-            , this.autoSaveTimeoutMs);
-        });
-
+  loadAudioFile() {
+    if (this.piece == null) {
+      return;
+    }
+    this.pieceStorageService.getPieceAudioFile(this.pieceId).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        this.audioUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+      },
+      error: (error) => {
+        console.error('Error loading audio', error);
+      }
     });
+  }
+
+  async loadPages() {
+    if (this.piece == null) {
+      return;
+    }
+    this.loading = false;
+
+    if (this.piece.type == 'image') {
+      for (let i = 0; i < this.piece.pageCount; i++) {
+        this.pieceStorageService.getPiecePageFile(this.pieceId, i + 1).subscribe({
+          next: (blob) => {
+            const url = URL.createObjectURL(blob);
+            this.imageUrls[i] = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+            if (this.currentPage - 1 == i) {
+              this.currentImageUrl = this.imageUrls[i];
+              this.waitForImageToLoad();
+            }
+          },
+          error: (error) => {
+            console.error('Error loading page', error);
+          }
+        });
+      }
+    } else {
+      this.pieceStorageService.getPieceFile(this.pieceId).subscribe({
+        next: (blob) => {
+          const url = URL.createObjectURL(blob);
+          this.pdfUrl = url;
+        },
+        error: (error) => {
+          console.error('Error loading pdf', error);
+        }
+      });
+    }
+
+    this.autoSaveIntervalId = window.setInterval(() => {
+      this.saveDrawings()
+    }
+      , this.autoSaveTimeoutMs);
   }
 
   waitForImageToLoad() {
@@ -94,7 +124,6 @@ export class ViewPieceComponent {
       window.setTimeout(() => this.waitForImageToLoad(), 100);
       return;
     }
-    console.log("Image loaded", imageEl);
     this.afterViewLoaded(imageEl as HTMLDivElement);
   }
 
@@ -112,72 +141,96 @@ export class ViewPieceComponent {
 
   saveDrawings() {
     this.saveCanvas();
-    this.pieceStorageService.saveDrawings(this.pieceId, { imageUrls: this.savedDrawings }).subscribe({
-      next: (response) => {
-      },
-      error: (error) => {
-        console.error('Error saving drawings', error);
+    for (let i = 0; i < this.piece.pageCount; i++) {
+      const blob = this.savedDrawings[i].content;
+      if (blob) {
+        this.pieceStorageService.saveDrawings(this.pieceId, i + 1, blob).subscribe({
+          next: (response) => {
+          },
+          error: (error) => {
+            console.error('Error saving drawings', error);
+          }
+        });
       }
-    });
+    }
   }
 
   getDrawings() {
-    this.pieceStorageService.getDrawings(this.pieceId).subscribe({
-      next: (drawings) => {
-        this.savedDrawings = drawings.imageUrls;
-        this.restoreCanvas(this.currentPage);
-      },
-      error: (error) => {
-        console.error('Error loading drawings', error);
-      }
-    });
+    for (let i = 0; i < this.piece.pageCount; i++) {
+      this.savedDrawings[i] = { page: i + 1, content: null, loading: signal(true) };
+
+      this.pieceStorageService.getDrawing(this.pieceId, i + 1).subscribe({
+        next: (blob) => {
+          if (!blob) {
+            console.log('No drawing found for page', i);
+            return;
+          }
+          this.savedDrawings[i].content = blob;
+          if(i == this.currentPage - 1) {
+            this.restoreCanvas(i);
+          }
+        },
+        error: (error) => {
+          console.error('Error loading drawings', error);
+        }
+      });
+    }
   }
 
-  saveCanvas() {
+  async saveCanvas() {
     const canvas = this.drawingCanvas.nativeElement as HTMLCanvasElement;
-    this.savedDrawings[this.currentPage] = canvas.toDataURL();
+    const blobPromise = new Promise<Blob | null>((resolve, reject) =>
+      canvas.toBlob((blob) => resolve(blob), 'image/png'));
+    const blob = await blobPromise;
+
+    if (!blob)
+      return;
+
+    this.savedDrawings[this.currentPage - 1].content = blob;
   }
 
-  restoreCanvas(page: number) {
+  async restoreCanvas(page: number) {
     const canvas = this.drawingCanvas.nativeElement as HTMLCanvasElement;
-    const dataUrl = this.savedDrawings[this.currentPage];
+    const currentImageBlob = this.savedDrawings[this.currentPage - 1].content;
+    if (currentImageBlob == null) { return }
+    const dataUrl = URL.createObjectURL(currentImageBlob);
     this.drawingCanvasContext.clearRect(0, 0, canvas.width, canvas.height);
     if (dataUrl) {
       const img = new Image();
       img.onload = () => {
         this.drawingCanvasContext.drawImage(img, 0, 0);
+        URL.revokeObjectURL(dataUrl);
       };
       img.src = dataUrl;
     }
   }
 
-  nextPage() {
+  async nextPage() {
     const nextPage = this.currentPage + 1;
-    if (nextPage > this.pageCount) {
-      this.changePage(1);
+    if (nextPage > this.piece.pageCount) {
+      await this.changePage(1);
     } else {
-      this.changePage(nextPage);
+      await this.changePage(nextPage);
     }
   }
 
-  previousPage() {
+  async previousPage() {
     const nextPage = this.currentPage - 1;
     if (nextPage < 1) {
-      this.changePage(this.pageCount);
+      await this.changePage(this.piece.pageCount);
     } else {
-      this.changePage(nextPage);
+      await this.changePage(nextPage);
     }
   }
 
-  changePage(page: number) {
-    this.saveCanvas();
+  async changePage(page: number) {
+    await this.saveCanvas();
     this.currentPage = page;
-    this.currentImageUrl = this.piece.imageUrls[this.currentPage - 1];
+    this.currentImageUrl = this.imageUrls[this.currentPage - 1];
     this.restoreCanvas(page);
   }
 
   pdfLoaded(event: any) {
-    this.pageCount = event._pdfInfo.numPages
     this.afterViewLoaded(this.pdfContainer.nativeElement);
   }
 
@@ -202,7 +255,7 @@ export class ViewPieceComponent {
     this.cursorCanvasContext = cursorCanvasEl.getContext('2d')!;
     this.setupDrawingCanvas();
     this.setupCursorCanvas(cursorCanvasEl);
-    this.getDrawings();
+    this.restoreCanvas(this.currentPage);
   }
 
   setupDrawingCanvas() {

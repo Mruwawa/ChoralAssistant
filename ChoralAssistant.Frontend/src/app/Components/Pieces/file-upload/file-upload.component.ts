@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
-import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { FormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatInputModule } from '@angular/material/input';
@@ -15,35 +15,31 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
   styleUrl: './file-upload.component.scss'
 })
 export class FileUploadComponent {
-  private pdfFile!: File;
-  private imageFiles!: File[];
-  private audioFile!: File;
+  
+    private httpClient: HttpClient = inject(HttpClient);
+    private dialogRef = inject(MatDialogRef<FileUploadComponent>);
 
-  pdfFileSelected: string = '';
-  imageFilesSelectedCount: number = 0;
-  audioFileSelected: string = '';
-
-  private httpClient: HttpClient = inject(HttpClient);
-  private dialogRef = inject(MatDialogRef<FileUploadComponent>);
-
-  fileTabIndex: number = 0;
-  audioTabIndex: number = 0;
+  //inputs
   pieceName: string = '';
+  description: string = '';
+  pdfFile!: File;
+  imageFiles!: File[];
+  audioFile!: File;
   audioLink: string = '';
 
-  errorMessage: string = '';
-
+  selectedFileTab: number = 0;
+  selectedAudioTab: number = 0;
   saving: boolean = false;
+  errorMessage: string = '';
 
   constructor() {
     this.dialogRef.disableClose = false;
-   }
+  }
 
   onPDFFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.pdfFile = input.files[0];
-      this.pdfFileSelected = this.pdfFile.name;
     };
   }
 
@@ -51,7 +47,6 @@ export class FileUploadComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.imageFiles = Array.from(input.files);
-      this.imageFilesSelectedCount = this.imageFiles.length;
     }
   }
 
@@ -59,7 +54,6 @@ export class FileUploadComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.audioFile = input.files[0];
-      this.audioFileSelected = this.audioFile.name;
     }
   }
 
@@ -72,12 +66,12 @@ export class FileUploadComponent {
       return;
     }
 
-    if (this.fileTabIndex === 0 && !this.pdfFile) {
+    if (this.selectedFileTab === 0 && !this.pdfFile) {
       this.errorMessage = 'Plik PDF jest wymagany!';
       return;
     }
 
-    if (this.fileTabIndex === 1 && (!this.imageFiles || this.imageFiles.length === 0)) {
+    if (this.selectedFileTab === 1 && (!this.imageFiles || this.imageFiles.length === 0)) {
       this.errorMessage = 'Obrazy są wymagane!';
       return;
     }
@@ -86,7 +80,11 @@ export class FileUploadComponent {
       formData.append('pieceName', this.pieceName);
     }
 
-    if (this.fileTabIndex === 0) {
+    if(this.description != '') {
+      formData.append('description', this.description);
+    }
+
+    if (this.selectedFileTab === 0) {
       if (this.pdfFile) {
         formData.append('files', this.pdfFile);
         formData.append('fileType', 'pdf');
@@ -100,7 +98,7 @@ export class FileUploadComponent {
       }
     }
 
-    if (this.audioTabIndex === 0) {
+    if (this.selectedAudioTab === 0) {
       if (this.audioFile) {
         formData.append('audioFile', this.audioFile);
       }

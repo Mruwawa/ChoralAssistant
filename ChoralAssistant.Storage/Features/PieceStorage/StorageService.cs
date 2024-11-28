@@ -1,15 +1,12 @@
 ﻿using ChoralAssistant.Storage.Infrastructure;
 using ChoralAssistant.Storage.Models;
-using File = ChoralAssistant.Storage.Models.File;
+using File = ChoralAssistant.Storage.Models.FileModel;
 
 namespace ChoralAssistant.Storage.Features.PieceStorage
 {
-    internal interface IPieceStorageService
+    internal interface IStorageService
     {
-        public Task UploadFile(PieceUploadModel pieceUploadModel);
         public Task<List<Google.Apis.Drive.v3.Data.File>> GetAllPieces();
-
-        public Task<(byte[] fileContent, string mimeType, string fileName)> DownloadFile(string fileId);
         public Drawings GetDrawings(string fileId);
 
         public void SaveDrawings(string fileId, Drawings drawings);
@@ -19,41 +16,8 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
 
         public Task<Piece> GetPiece(string folderId);
     }
-    internal class StorageService(IFileRepository _fileRepository, ISqlRepository _sqlRepository) : IPieceStorageService
+    internal class StorageService(IFileRepository _fileRepository, InMemorySQLRepo _sqlRepository) : IStorageService
     {
-        public async Task UploadFile(PieceUploadModel pieceUploadModel)
-        {
-            var folderId = await _fileRepository.GetFolderId(pieceUploadModel.PieceName);
-
-            if (folderId == null)
-            {
-                folderId = await _fileRepository.CreateFolder(pieceUploadModel.PieceName);
-            }
-
-            if (pieceUploadModel.FileType == "pdf")
-            {
-                await _fileRepository.UploadFile(folderId, "notesPDFFile", "application/pdf", pieceUploadModel.Files[0].OpenReadStream());
-            }
-            else if (pieceUploadModel.FileType == "image")
-            {
-                int i = 1;
-                foreach (var file in pieceUploadModel.Files)
-                {
-                    await _fileRepository.UploadFile(folderId, $"notesImageFile_{i}", "image/jpeg", file.OpenReadStream());
-                    i++;
-                }
-            }
-
-            if (pieceUploadModel.AudioFile != null)
-            {
-                await _fileRepository.UploadFile(folderId, pieceUploadModel.AudioFile.Name, "audio/mpeg", pieceUploadModel.AudioFile.OpenReadStream());
-            }
-            else if (!string.IsNullOrEmpty(pieceUploadModel.AudioLink))
-            {
-                _sqlRepository.SaveImageUrl(folderId, pieceUploadModel.AudioLink);
-            }
-        }
-
         public async Task<List<Google.Apis.Drive.v3.Data.File>> GetAllPieces()
         {
             var allFolders = await _fileRepository.GetAllFolders();
@@ -80,16 +44,11 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
             var pieces = await _fileRepository.GetAllFolders();
             return pieces.Select(p => new PieceListing()
             {
-                Id = p.Id,
+                PieceId = 1,//p.Id,
                 Title = p.Name,
+                ThumbnailUrl = p.ThumbnailLink
             }).ToList();
         }
-
-        public async Task<(byte[] fileContent, string mimeType, string fileName)> DownloadFile(string fileId)
-        {
-            return await _fileRepository.DownloadFile(fileId);
-        }
-
         public async Task<Piece> GetPiece(string folderId) {
             var folderName = await _fileRepository.GetFolderName(folderId);
             var files = await _fileRepository.GetAllFiles(folderId);

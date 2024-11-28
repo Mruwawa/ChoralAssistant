@@ -5,55 +5,13 @@ BEGIN
     CREATE TABLE Pieces
     (
         [PieceId] INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
-        [Description] VARCHAR(255),
+        [Title] VARCHAR(255),
+        [Description] VARCHAR(4096),
         [AudioUrl] VARCHAR(255),
-        [OwnerUserId] VARCHAR(255)
-    )
-END
-
-GO
-
-IF NOT EXISTS (SELECT 1
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_NAME = 'Pages' AND TABLE_SCHEMA = 'dbo')
-BEGIN
-    CREATE TABLE Pages
-    (
-        [PageId] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-        [PageNumer] INT NOT NULL,
-        [PieceId] INT NOT NULL,
-        CONSTRAINT FK_Pages_Pieces FOREIGN KEY (PieceId) REFERENCES Pieces(PieceId)
-    )
-END
-
-GO
-
-IF NOT EXISTS (SELECT 1
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_NAME = 'Files' AND TABLE_SCHEMA = 'dbo')
-BEGIN
-    CREATE TABLE Files
-    (
-        [FileId] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-        [StorageParentFolderGuid] VARCHAR(255) NOT NULL,
-        [StorageFileGuid] VARCHAR(255) NOT NULL,
-        [FileTypeId] INT NOT NULL,
-        [PieceId] INT NOT NULL,
-        CONSTRAINT FK_Files_Pieces FOREIGN KEY (PieceId) REFERENCES Pieces(PieceId)
-    )
-END
-
-GO
-
-IF NOT EXISTS (SELECT 1
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_NAME = 'PagesFiles' AND TABLE_SCHEMA = 'dbo')
-BEGIN
-    CREATE TABLE PagesFiles
-    (
-        [PageId] INT NOT NULL,
-        [FileId] INT NOT NULL,
-        CONSTRAINT FK_PagesFiles_Pieces FOREIGN KEY (PageId) REFERENCES Pages(PageId),
-        CONSTRAINT FK_PagesFiles_Files FOREIGN KEY (FileId) REFERENCES Files(FileId)
+        [ThumbnailUrl] VARCHAR(255),
+        [OwnerUserGuid] VARCHAR(255),
+        [StorageFolderGuid] VARCHAR(255),
+        [PageCount] INT,
+        [Type] VARCHAR(255)
     )
 END

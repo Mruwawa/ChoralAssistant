@@ -5,7 +5,7 @@ export interface CalendarEvent {
     end: string;
     location: string;
     pieces: {
-        id: string,
+        id: number,
         title: string
     }[];
     id?: string;
