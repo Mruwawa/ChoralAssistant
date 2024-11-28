@@ -53,3 +53,6 @@ obj/
 ChoralAssistant.Frontend/.env
 bin/
 ChoralAssistant.Backend/appsettings.Development.json
+dist/
+ChoralAssistant.Backend/Properties
+ChoralAssistant.Backend/wwwroot

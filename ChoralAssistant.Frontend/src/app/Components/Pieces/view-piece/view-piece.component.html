@@ -5,28 +5,28 @@
 }
 @else {
 <div class="flex px-2 pb-2">
-    @if(piece.audioFileUrl){
-    <audio src="{{piece.audioFileUrl}}" controls></audio>
+    @if(audioUrl){
+    <audio [src]="audioUrl" controls></audio>
     }
-    @if(piece.audioLink != null && piece.audioLink != "" && piece.audioLink != undefined) {
-    <a href="{{piece.audioLink}}">Nagranie</a>
+    @if(piece.audioUrl != null && piece.audioUrl != "" && piece.audioUrl != undefined) {
+    <a href="{{piece.audioUrl}}">Nagranie</a>
     }
 </div>
-@if(piece.fileUrl || piece.imageUrls && piece.imageUrls.length > 0) {
+@if(pdfUrl || imageUrls && imageUrls.length > 0) {
 <span class="flex items-center">
     <button mat-mini-fab (click)="previousPage()"><mat-icon>arrow_left</mat-icon></button>
     <span class="flex-1">
         <span class="ml-10"></span>
         <mat-slide-toggle [(ngModel)]="isErasing">Gumka do ścierania</mat-slide-toggle>
     </span>
-    {{currentPage}} / {{pageCount}}
+    {{currentPage}} / {{piece.pageCount}}
     <span class="flex-1"></span>
     <button mat-mini-fab (click)="nextPage()"><mat-icon>arrow_right</mat-icon></button>
 </span>
 @if(this.piece.type == "pdf"){
 <div #pdfContainer class="h-[200vh] mt-4 pdf-container">
 
-    <pdf-viewer [src]="piece.fileUrl" [render-text]="true" [show-all]="false" (after-load-complete)="pdfLoaded($event)"
+    <pdf-viewer [src]="pdfUrl" [render-text]="true" [show-all]="false" (after-load-complete)="pdfLoaded($event)"
         [page]="currentPage" [original-size]="false" [zoom-scale]="'page-width'" class="h-full !overflow-hidden">
     </pdf-viewer>
     <canvas #drawingCanvas class="pdf-canvas"></canvas>

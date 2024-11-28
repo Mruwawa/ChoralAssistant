@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChoralAssistant.Storage.Models
+﻿namespace ChoralAssistant.Storage.Models
 {
-    public class PieceListing
+    public record PieceListing
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
+        public required int PieceId { get; init; }
+        public required string Title { get; init; }
+        public required string ThumbnailUrl { get; init; }
     }
 }

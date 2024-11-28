@@ -5,51 +5,55 @@
 </div>
 }
 @else{
-
 <div class="p-4 flex flex-col">
     <h3>Nowy utwór</h3>
     <mat-form-field>
         <mat-label for="pieceName">Nazwa utworu</mat-label>
         <input matInput type="text" id="pieceName" [(ngModel)]="pieceName" required>
     </mat-form-field>
-    <mat-tab-group [(selectedIndex)]="fileTabIndex">
+    <mat-form-field>
+        <mat-label for="description">Opis</mat-label>
+        <textarea class="!resize-none" rows="4" matInput type="text" id="description" [(ngModel)]="description"></textarea>
+    </mat-form-field>
+    <mat-tab-group [(selectedIndex)]="selectedFileTab">
         <mat-tab label="Plik PDF">
             <div class="flex flex-row gap-2 items-center p-2">
-                <input type="file" class="hidden" (change)="onPDFFileSelected($event)" #pdfFile accept=".pdf"
+                <input type="file" class="hidden" (change)="onPDFFileSelected($event)" #pdfFileInput accept=".pdf"
                     id="pdfFile" />
-                @if(pdfFileSelected == '') {
-                <button mat-button (click)="pdfFile.click()">Wybierz plik</button>
+                @if(!pdfFile) {
+                <button mat-button (click)="pdfFileInput.click()">Wybierz plik</button>
                 }
                 @else {
-                <span>Wybrano: {{pdfFileSelected}}</span>
-                <button mat-button (click)="pdfFile.click()">Zmień</button>
+                <span>Wybrano: {{pdfFile.name}}</span>
+                <button mat-button (click)="pdfFileInput.click()">Zmień</button>
                 }
             </div>
         </mat-tab>
         <mat-tab label="Obrazy">
             <div class="flex flex-row gap-2 items-center p-2">
-                <input type="file" class="hidden" (change)="onImageFilesSelected($event)" #imageFiles accept="image/*"
-                    multiple id="imageFiles" />
-                @if(imageFilesSelectedCount == 0) {
-                <button mat-button (click)="imageFiles.click()">Wybierz pliki</button>
+                <input type="file" class="hidden" (change)="onImageFilesSelected($event)" #imageFilesInput
+                    accept="image/*" multiple id="imageFiles" />
+                @if(!imageFiles || imageFiles.length == 0) {
+                <button mat-button (click)="imageFilesInput.click()">Wybierz pliki</button>
                 }
                 @else {
-                <span>Liczba wybranych plików: {{imageFilesSelectedCount}}</span>
-                <button mat-button (click)="imageFiles.click()">Zmień pliki</button>
+                <span>Liczba wybranych plików: {{imageFiles.length}}</span>
+                <button mat-button (click)="imageFilesInput.click()">Zmień pliki</button>
                 }
             </div>
         </mat-tab>
     </mat-tab-group>
-    <mat-tab-group [(selectedIndex)]="audioTabIndex">
+    <mat-tab-group [(selectedIndex)]="selectedAudioTab">
         <mat-tab label="Plik audio">
             <div class="flex flex-row gap-2 items-center p-2">
-                <input type="file" class="hidden" accept="audio/*" (change)="onAudioFileSelected($event)" #audioFile>
-                @if(audioFileSelected == '') {
-                <button mat-button (click)="audioFile.click()">Wybierz plik</button>
+                <input type="file" class="hidden" accept="audio/*" (change)="onAudioFileSelected($event)"
+                    #audioFileInput>
+                @if(!audioFile) {
+                <button mat-button (click)="audioFileInput.click()">Wybierz plik</button>
                 }
                 @else {
-                <span>Wybrano: {{audioFileSelected}}</span>
-                <button mat-button (click)="audioFile.click()">Zmień</button>
+                <span>Wybrano: {{audioFile.name}}</span>
+                <button mat-button (click)="audioFileInput.click()">Zmień</button>
                 }
             </div>
         </mat-tab>

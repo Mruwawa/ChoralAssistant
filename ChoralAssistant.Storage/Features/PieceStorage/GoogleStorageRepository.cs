@@ -1,7 +1,10 @@
 ﻿using ChoralAssistant.Backend.Authorization.Features.Authorization;
+using ChoralAssistant.Backend.Storage.Models;
 using ChoralAssistant.Storage.Infrastructure;
+using ChoralAssistant.Storage.Models;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
+using Google.Apis.Requests;
 using Google.Apis.Services;
 using File = Google.Apis.Drive.v3.Data.File;
 
@@ -9,7 +12,7 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
 {
     internal class GoogleStorageRepository(IAccessTokenProvider _accessTokenProvider) : IFileRepository
     {
-        public async Task<(byte[] fileContent, string mimeType, string fileName)> DownloadFile(string fileId)
+        public async Task<FileModel> DownloadFile(string fileId)
         {
             var accessToken = await _accessTokenProvider.GetAccessToken();
 
@@ -27,7 +30,13 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
 
             using var memoryStream = new MemoryStream();
             request.Download(memoryStream);
-            return (memoryStream.ToArray(), fileMetadata.MimeType, fileMetadata.Name);
+
+            return new FileModel()
+            {
+                Content = memoryStream.ToArray(),
+                MimeType = fileMetadata.MimeType,
+                Name = fileMetadata.Name
+            };
         }
         public async Task<List<File>> GetAllFolders()
         {
@@ -55,23 +64,13 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
 
             return [.. result.Files];
         }
-        public async Task<string> UploadFile(string parentFolderId, string fileName, string fileType, Stream fileStream)
+        public async Task<File> UploadFile(string parentFolderId, FileUpload fileUpload)
         {
             try
             {
-                var authToken = await _accessTokenProvider.GetAccessToken();
+                var accessToken = await _accessTokenProvider.GetAccessToken();
 
-                var folderId = await GetFolderId("ChoralAssistantData");
-
-                // Create the folder if it doesn't exist
-                if (string.IsNullOrEmpty(folderId))
-                {
-                    folderId = await CreateFolder("ChoralAssistantData");
-                }
-
-
-                var credential = GoogleCredential.FromAccessToken(authToken);
-                //.CreateScoped(DriveService.Scope.DriveAppdata);
+                var credential = GoogleCredential.FromAccessToken(accessToken);
 
                 var service = new DriveService(new BaseClientService.Initializer
                 {
@@ -79,26 +78,27 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
                     ApplicationName = "ChoralAssistant"
                 });
 
-                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+                var fileMetadata = new File()
                 {
-                    Name = fileName
+                    Name = fileUpload.FileName
                     ,
                     Parents = new List<string>
                 {
                     parentFolderId
-                }
+                },
+                    AppProperties = fileUpload.MetaData
                 };
 
                 FilesResource.CreateMediaUpload request;
 
                 request = service.Files.Create(
-                    fileMetadata, fileStream, fileType);
-                request.Fields = "id";
+                    fileMetadata, fileUpload.FileStream, fileUpload.FileType);
+                request.Fields = "id,thumbnailLink";
                 var result = request.Upload();
 
                 var file = request.ResponseBody;
 
-                return file.Id;
+                return file;
             }
             catch (Exception e)
             {
@@ -267,6 +267,74 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
             var result = request.Execute();
 
             return result.Files.FirstOrDefault()?.Name ?? "";
+        }
+
+        public async Task<string> FindFileId(string folderId, Dictionary<string, string> queryMetadata)
+        {
+            var accessToken = await _accessTokenProvider.GetAccessToken();
+
+            var credential = GoogleCredential.FromAccessToken(accessToken);
+            var driveService = new DriveService(new BaseClientService.Initializer
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "ChoralAssistant"
+            });
+
+            var request = driveService.Files.List();
+            request.Fields = "files(id)";
+
+            var metadataQueries = queryMetadata.Select(kv => $"appProperties has {{ key='{kv.Key}' and value='{kv.Value}' }}");
+            var metadataQuery = string.Join(" and ", metadataQueries);
+
+            if (!string.IsNullOrEmpty(metadataQuery))
+            {
+                request.Q = $"'{folderId}' in parents and {metadataQuery}";
+            }
+            else
+            {
+                request.Q = $"'{folderId}' in parents";
+            }
+            try
+            {
+                var foundFiles = await request.ExecuteAsync();
+
+                if (foundFiles == null || foundFiles.Files == null || foundFiles.Files.Count == 0)
+                {
+                    return "";
+                }
+                var fileId = foundFiles.Files.FirstOrDefault()!.Id;
+                return fileId;
+
+            }
+            catch (Exception e)
+            {
+                return "";
+            }
+        }
+
+        public async Task UpdateFile(string fileId, FileUpload fileUpload)
+        {
+            try
+            {
+                var accessToken = await _accessTokenProvider.GetAccessToken();
+
+                var credential = GoogleCredential.FromAccessToken(accessToken);
+
+                var service = new DriveService(new BaseClientService.Initializer
+                {
+                    HttpClientInitializer = credential,
+                    ApplicationName = "ChoralAssistant"
+                });
+
+                var request = service.Files.Update(new File(), fileId, fileUpload.FileStream, fileUpload.FileType);
+                request.Fields = "id,thumbnailLink";
+                var result = request.Upload();
+
+                var file = request.ResponseBody;
+            }
+            catch (Exception e)
+            {
+            }
         }
     }
 }

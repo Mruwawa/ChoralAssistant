@@ -5,6 +5,7 @@ import { PieceViewModel } from '../Models/piece-view-model';
 import { DomSanitizer, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
 import { Drawings } from '../Models/drawings';
 import { Piece } from '../Models/piece';
+import { PieceListing } from '../Models/piece-listing';
 
 @Injectable({
   providedIn: 'root'
@@ -16,95 +17,40 @@ export class PieceStorageService {
   private httpClient: HttpClient = inject(HttpClient);
   private sanitizer: DomSanitizer = inject(DomSanitizer);
 
-  getDrawings(pieceId: string): Observable<Drawings> {
-    return this.httpClient.get(`/api/get-drawings/${pieceId}`).pipe(
-      map((drawings: any) => {
-        return {
-          imageUrls: drawings.imageUrls
-        };
-      })
-    );
+  getDrawing(pieceId: number, page: number): Observable<Blob> {
+    return this.httpClient.get(`/api/get-drawings/${pieceId}/${page}`, { responseType: 'blob' });
   }
 
-  saveDrawings(pieceId: string, drawings: Drawings): Observable<any> {
-    return this.httpClient.post(`/api/save-drawings/${pieceId}`, drawings);
+  saveDrawings(pieceId: number, page: number, drawingsFile: Blob): Observable<any> {
+    const formData = new FormData();
+    formData.append('drawings', drawingsFile);
+
+    return this.httpClient.post(`/api/save-drawings/${pieceId}/${page}`, formData);
   }
 
-  async getPiece(pieceId: string): Promise<PieceViewModel | null> {
-    const pieceViewModel: PieceViewModel = 
-    {
-      id: "",
-      name: "",
-      type: "",
-      imageUrls: [],
-      fileUrl: "",
-      audioFileUrl: "",
-      audioLink: null
-    };
-
-    const piece = await this.httpClient.get<Piece>(`/api/get-piece/${pieceId}`).toPromise();
-
-    if(piece == null) {
-      return null;
-    }
-    
-    if(piece.pdfFileId != null) {
-      pieceViewModel.type = "pdf";
-      const pdfData = await this.httpClient.get(`/api/download-file/${piece.pdfFileId}`, { responseType: 'blob' }).toPromise();
-      if(pdfData != null) {
-        const pdfUrl = URL.createObjectURL(pdfData);
-        pieceViewModel.fileUrl = pdfUrl;
-      }
-    }
-
-    if(piece.imageFileIds != null && piece.imageFileIds.length > 0) {
-      pieceViewModel.type = "image";
-      for(const imageFileId of piece.imageFileIds) {
-        const imageData = await this.httpClient.get(`/api/download-file/${imageFileId}`, { responseType: 'blob' }).toPromise();
-        if(imageData != null) {
-          const imageUrl = URL.createObjectURL(imageData);
-          pieceViewModel.imageUrls.push(this.sanitizer.bypassSecurityTrustResourceUrl(imageUrl));
-        }
-      }
-    }
-
-    if(piece.audioFileId != null) {
-      const audioData = await this.httpClient.get(`/api/download-file/${piece.audioFileId}`, { responseType: 'blob' }).toPromise();
-      if(audioData != null) {
-        const audioUrl = URL.createObjectURL(audioData);
-        pieceViewModel.audioFileUrl = audioUrl;
-      }
-    }
-
-    if(pieceViewModel.audioLink != null) {
-      pieceViewModel.audioLink = this.sanitizer.bypassSecurityTrustResourceUrl(piece.audioUrl);
-    }
-    return pieceViewModel;
+  getPiece(pieceId: number): Observable<Piece> {
+    return this.httpClient.get<Piece>(`/api/get-piece/${pieceId}`);
   }
 
-  getAllPieces(): Observable<{
-    id: string;
-    name: string;
-    thumbnailUrl: string;
-  }[]> {
-    return this.httpClient.get("/api/get-all-pieces").pipe(
-      map((pieces: any) => {
-        return pieces.map((result: any) =>
-        ({
-          id: result.id,
-          name: result.name,
-          thumbnailUrl: result.thumbnailLink,
-        }));
-      }));
+  getPieceFile(pieceId: number): Observable<Blob> {
+    return this.httpClient.get(`/api/download-notes-file/${pieceId}`, { responseType: 'blob' });
   }
 
-  getAllPiecesMinimal(): Observable<{id: string, title: string}[]> 
-  {
-    return this.httpClient.get<{id: string, title: string}[]>("/api/get-all-pieces-minimal");    
+  getPiecePageFile(pieceId: number, page: number): Observable<Blob> {
+    console.log("Getting page file", page);
+    return this.httpClient.get(`/api/download-notes-page-file/${pieceId}/${page}`, { responseType: 'blob' });
   }
 
-  deleteFile(fileId: string) {
-    return this.httpClient.delete(`/api/delete-piece/${fileId}`);
+  listAllPieces(): Observable<PieceListing[]> {
+    return this.httpClient.get<PieceListing[]>("/api/list-pieces");
+  }
+
+  deleteFile(pieceId: number) {
+    return this.httpClient.delete(`/api/delete-piece/${pieceId}`);
+  }
+
+  getPieceAudioFile(pieceId: number) {
+    return this.httpClient.get(`/api/download-audio-file/${pieceId}`, { responseType: 'blob' });
   }
 }
 

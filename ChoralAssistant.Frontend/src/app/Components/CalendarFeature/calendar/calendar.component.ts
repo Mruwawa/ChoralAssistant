@@ -1,9 +1,8 @@
 import { Component, inject } from '@angular/core';
-import { CalendarService } from '../../Services/calendar.service';
+import { CalendarService } from '../../../Services/calendar.service';
 import { MatButtonModule } from '@angular/material/button';
-import { JsonPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
-import { CalendarEvent } from '../../Models/calendar-event';
+import { CalendarEvent } from '../../../Models/calendar-event';
 import { MatDialog } from '@angular/material/dialog';
 import { AddEventComponent } from '../add-event/add-event.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';

@@ -1,6 +1,6 @@
 <mat-card class="w-full min-h-[320px]">
     <mat-card-header class="!pr-1">
-        <mat-card-title>{{piece.name}}</mat-card-title>
+        <mat-card-title>{{piece.title}}</mat-card-title>
         <span class="flex-1"></span>
         <button class="" mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
         <mat-menu #menu="matMenu">
@@ -16,6 +16,6 @@
         </p>
     </mat-card-content>
     <mat-card-actions>
-        <button mat-button [routerLink]="['/utwor', piece.id]">Otwórz</button>
+        <button mat-button [routerLink]="['/utwor', piece.pieceId]">Otwórz</button>
     </mat-card-actions>
 </mat-card>

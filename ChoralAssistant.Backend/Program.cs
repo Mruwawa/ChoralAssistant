@@ -1,9 +1,6 @@
 using ChoralAssistant.Backend.Authorization;
 using ChoralAssistant.Backend.Calendar;
 using ChoralAssistant.Storage;
-using Microsoft.AspNetCore.Builder.Extensions;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SpaProxy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +12,6 @@ builder.Services.AddHttpClient();
 builder.Services.AddAuthModule(builder.Configuration);
 builder.Services.AddStorageModule();
 builder.Services.AddCalendarModule();
-
-
-
 var app = builder.Build();
 
 
@@ -37,5 +31,5 @@ app.RegisterStorageEndpoints();
 app.RegisterCalendarEndpoints();
 
 app.UseAuthentication();
-app.MapFallbackToFile("/index.html");
+app.MapFallbackToFile("index.html");
 app.Run();

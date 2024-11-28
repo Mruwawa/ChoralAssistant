@@ -1,13 +1,14 @@
 import { Component, EventEmitter, inject, Input, input, Output } from '@angular/core';
-import { PieceViewModel } from '../../Models/piece-view-model';
+import { PieceViewModel } from '../../../Models/piece-view-model';
 import { MatCard, MatCardActions, MatCardContent, MatCardHeader, MatCardImage, MatCardSubtitle, MatCardTitle } from '@angular/material/card';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterModule } from '@angular/router';
-import { Piece } from '../../Models/piece';
+import { Piece } from '../../../Models/piece';
 import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDeleteComponent } from '../confirm-delete/confirm-delete.component';
+import { ConfirmDeleteComponent } from '../../Shared/confirm-delete/confirm-delete.component';
+import { PieceListing } from '../../../Models/piece-listing';
 
 
 @Component({
@@ -18,12 +19,8 @@ import { ConfirmDeleteComponent } from '../confirm-delete/confirm-delete.compone
   styleUrl: './piece.component.scss'
 })
 export class PieceComponent {
-  @Input() piece!: {
-    id: string;
-    name: string;
-    thumbnailUrl: string;
-  };
-  @Output() onDelete = new EventEmitter<string>();
+  @Input() piece!: PieceListing;
+  @Output() onDelete = new EventEmitter<number>();
 
   dialog = inject(MatDialog);
 
@@ -34,11 +31,11 @@ export class PieceComponent {
     const dialogRef = this.dialog.open(ConfirmDeleteComponent, {
       width: '300px',
       height: '300px',
-      data: { entityName: this.piece.name }
+      data: { entityName: this.piece.title }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.onDelete.emit(this.piece.id);
+        this.onDelete.emit(this.piece.pieceId);
       }
     });
   }

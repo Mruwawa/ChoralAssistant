@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace ChoralAssistant.Storage.Models
 {
-    public class PieceUploadModel
+    public record PieceUploadModel
     {
-        public string PieceName { get; set; }
-        public string FileType { get; set; }
-        public List<IFormFile> Files { get; set; }
-        public IFormFile AudioFile { get; set; }
-        public string AudioLink { get; set; }
+        public required string PieceName { get; init; }
+        public string? Description { get; init; }
+        public required List<IFormFile> NoteFiles { get; init; }
+        public required string FileType { get; init;  }
+        public IFormFile? AudioFile { get; init; }
+        public string? AudioUrl { get; init; }
     }
 }

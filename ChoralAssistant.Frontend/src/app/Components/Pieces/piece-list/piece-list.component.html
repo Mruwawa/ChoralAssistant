@@ -17,7 +17,7 @@
     </div>
     @if(pieces && pieces.length > 0) {
     <div class="grid grid-cols-[repeat(auto-fit,minmax(300px,300px))] justify-center gap-4">
-        @for (piece of pieces; track piece.id) {
+        @for (piece of pieces; track piece.pieceId) {
         <app-piece (onDelete)="deletePiece($event)" [piece]="piece"></app-piece>
         }
     </div>

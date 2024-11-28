@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './Components/home/home.component';
-import { PieceListComponent } from './Components/piece-list/piece-list.component';
-import { ViewPieceComponent } from './Components/view-piece/view-piece.component';
-import { CalendarComponent } from './Components/calendar/calendar.component';
+import { PieceListComponent } from './Components/Pieces/piece-list/piece-list.component';
+import { ViewPieceComponent } from './Components/Pieces/view-piece/view-piece.component';
+import { CalendarComponent } from './Components/CalendarFeature/calendar/calendar.component';
 import { authGuard } from './Guards/auth.guard';
 import { saveDrawingGuard } from './Guards/save-drawing.guard';
 

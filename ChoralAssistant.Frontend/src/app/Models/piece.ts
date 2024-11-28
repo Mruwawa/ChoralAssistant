@@ -1,8 +1,10 @@
 export interface Piece {
-    folderId: string;
     title: string;
-    pdfFileId: string;
-    imageFileIds: string[];
-    audioFileId: string;
-    audioUrl: string;
+    description?: string;
+    audioUrl?: string;
+    thumbnailUrl: string;
+    ownerUserGuid: string;
+    storageFolderGuid: string;
+    pageCount: number;
+    type: string;
 }

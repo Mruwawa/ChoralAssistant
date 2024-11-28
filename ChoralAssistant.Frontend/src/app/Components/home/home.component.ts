@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { AuthorizationService } from '../../Services/authorization.service';
 import { UserData } from '../../Models/user-data';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { LoginComponent } from "../login/login.component";
+import { LoginComponent } from "../Shared/login/login.component";
 
 
 @Component({
