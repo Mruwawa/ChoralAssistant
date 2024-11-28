@@ -9,6 +9,7 @@ import { Piece } from '../../../Models/piece';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDeleteComponent } from '../../Shared/confirm-delete/confirm-delete.component';
 import { PieceListing } from '../../../Models/piece-listing';
+import { PieceStorageService } from '../../../Services/piece-storage.service';
 
 
 @Component({
@@ -23,8 +24,19 @@ export class PieceComponent {
   @Output() onDelete = new EventEmitter<number>();
 
   dialog = inject(MatDialog);
+  private pieceStorageService = inject(PieceStorageService);
 
   ngOnInit() {
+    if(!this.piece.thumbnailUrl) {
+      this.pieceStorageService.getPieceThumbnail(this.piece.pieceId).subscribe({
+        next: (thumbnailUrl) => {
+          this.piece.thumbnailUrl = thumbnailUrl;
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      });
+    }
   }
 
   deletePiece() {

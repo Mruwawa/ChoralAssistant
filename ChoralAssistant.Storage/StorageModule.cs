@@ -92,7 +92,7 @@ namespace ChoralAssistant.Storage
                     }
                     else
                     {
-                        return Results.NotFound("Audio file not found");
+                        return Results.NoContent();
                     }
                 });
 
@@ -122,13 +122,19 @@ namespace ChoralAssistant.Storage
                     }
                     else
                     {
-                        return Results.NotFound("Drawings file not found");
+                        return Results.NoContent();
                     }
                 });
 
-            routes.MapDelete("api/delete-piece/{fileId}", async (HttpContext context, IStorageService pieceStorageService, string fileId) =>
+            routes.MapDelete("api/delete-piece/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
             {
-                await pieceStorageService.DeletePiece(fileId);
+                await pieceStorageService.DeletePiece(pieceId);
+            });
+
+            routes.MapGet("api/get-save-thumbnail/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) => 
+            {
+                var thumbnailUrl = await pieceStorageService.GetSaveThumbnailUrl(pieceId);
+                await context.Response.WriteAsJsonAsync(thumbnailUrl);
             });
         }
     }

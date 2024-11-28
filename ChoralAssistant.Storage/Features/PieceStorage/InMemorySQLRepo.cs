@@ -53,5 +53,10 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
         {
             throw new NotImplementedException();
         }
+
+        public Task UpdatePieceThumbnailUrl(string userGuid, int pieceId, string thumbnailUrl)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

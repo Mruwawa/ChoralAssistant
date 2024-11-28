@@ -10,5 +10,6 @@ namespace ChoralAssistant.Storage.Infrastructure
 
         public Task<PieceDto> GetPiece(string userGuid, int pieceId);
         public Task DeletePiece(string userGuid, int pieceId);
+        public Task UpdatePieceThumbnailUrl(string userGuid, int pieceId, string thumbnailUrl);
     }
 }

@@ -26,17 +26,24 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
             var request = driveService.Files.Get(fileId);
             request.Fields = "id, name, mimeType";
 
-            var fileMetadata = request.Execute();
-
-            using var memoryStream = new MemoryStream();
-            request.Download(memoryStream);
-
-            return new FileModel()
+            try
             {
-                Content = memoryStream.ToArray(),
-                MimeType = fileMetadata.MimeType,
-                Name = fileMetadata.Name
-            };
+                var fileMetadata = request.Execute();
+
+                using var memoryStream = new MemoryStream();
+                request.Download(memoryStream);
+
+                return new FileModel()
+                {
+                    Content = memoryStream.ToArray(),
+                    MimeType = fileMetadata.MimeType,
+                    Name = fileMetadata.Name
+                };
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
         public async Task<List<File>> GetAllFolders()
         {
@@ -214,14 +221,12 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
                 ApplicationName = "ChoralAssistant"
             });
 
-            var request = driveService.Files.List();
-            request.Fields = "files(id, name, thumbnailLink)";
+            var request = driveService.Files.Get(fileId);
+            request.Fields = "thumbnailLink";
 
-            request.Q = $"'{fileId}' in parents and (name = 'notesPDFFile' or name = 'notesImageFile_0')";
+            var file = await request.ExecuteAsync();
 
-            var files = await request.ExecuteAsync();
-
-            return files.Files.FirstOrDefault()?.ThumbnailLink ?? "";
+            return file.ThumbnailLink ?? "";
         }
 
         public async Task<List<File>> GetAllFiles(string folderId)
@@ -281,7 +286,7 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
             });
 
             var request = driveService.Files.List();
-            request.Fields = "files(id)";
+            request.Fields = "files(id, thumbnailLink)";
 
             var metadataQueries = queryMetadata.Select(kv => $"appProperties has {{ key='{kv.Key}' and value='{kv.Value}' }}");
             var metadataQuery = string.Join(" and ", metadataQueries);

@@ -63,5 +63,15 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
                         AND PieceId = @PieceId";
             await connection.QuerySingleAsync<PieceDto>(query, new { UserGuid = userGuid, PieceId = pieceId }, commandType: CommandType.Text);
         }
+
+        public async Task UpdatePieceThumbnailUrl(string userGuid, int pieceId, string thumbnailUrl)
+        {
+            using var connection = GetConnection();
+            var query = @"UPDATE Pieces
+                        SET ThumbnailUrl = @ThumbnailUrl
+                        WHERE OwnerUserGuid = @UserGuid
+                        AND PieceId = @PieceId";
+            await connection.ExecuteAsync(query, new { UserGuid = userGuid, PieceId = pieceId, ThumbnailUrl = thumbnailUrl }, commandType: CommandType.Text);
+        }
     }
 }

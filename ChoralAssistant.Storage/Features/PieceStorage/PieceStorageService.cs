@@ -20,6 +20,7 @@ namespace ChoralAssistant.Backend.Storage.Features.PieceStorage
         public Task<FileModel> GetDrawingsFile(int pieceId, int page);
         public Task UploadDrawingsFile(IFormFile file, int pieceId, int page);
         public Task DeletePiece(int pieceId);
+        public Task<string> GetSaveThumbnailUrl(int pieceId);
 
     }
     internal class PieceStorageService(IUserAccessor _userAccessor, IFileRepository _fileRepository, ISqlRepository _sqlRepository) : IPieceStorageService
@@ -177,6 +178,10 @@ namespace ChoralAssistant.Backend.Storage.Features.PieceStorage
                 { "PageNumber", page.ToString() }
             };
             var fileId = await _fileRepository.FindFileId(piece.StorageFolderGuid, metaDataQuery);
+            if(string.IsNullOrEmpty(fileId))
+            {
+                return null;
+            }
             var file = await _fileRepository.DownloadFile(fileId);
             return file;
         }
@@ -209,6 +214,41 @@ namespace ChoralAssistant.Backend.Storage.Features.PieceStorage
             {
                 await _fileRepository.UpdateFile(fileId, fileUpload);
             }
+        }
+
+        public async Task<string> GetSaveThumbnailUrl(int pieceId)
+        {
+            var piece = await _sqlRepository.GetPiece(_userAccessor.UserId!, pieceId);
+
+            Dictionary<string, string> metaDataQuery;
+
+            if (piece.Type == "pdf")
+            {
+                metaDataQuery = new Dictionary<string, string>()
+                {
+                    { "FileType", "NotePdf" }
+                };
+            }
+            else 
+            {
+                metaDataQuery = new Dictionary<string, string>()
+                {
+                    { "FileType", "NoteImage" },
+                    { "PageNumber", "1" }
+                };
+            }
+
+            var fileId = await _fileRepository.FindFileId(piece.StorageFolderGuid, metaDataQuery);
+            if (string.IsNullOrEmpty(fileId)) return "";
+
+            var thumbnailUrl = await _fileRepository.GetThumbnailUrl(fileId);
+
+            if (string.IsNullOrEmpty(thumbnailUrl)) return "";
+
+            await _sqlRepository.UpdatePieceThumbnailUrl(_userAccessor.UserId!, pieceId, thumbnailUrl);
+
+            return thumbnailUrl;
+
         }
     }
 }

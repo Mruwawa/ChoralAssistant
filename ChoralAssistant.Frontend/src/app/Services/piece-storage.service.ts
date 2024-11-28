@@ -17,6 +17,11 @@ export class PieceStorageService {
   private httpClient: HttpClient = inject(HttpClient);
   private sanitizer: DomSanitizer = inject(DomSanitizer);
 
+  getPieceThumbnail(pieceId: number): Observable<string>
+  {
+    return this.httpClient.get<string>(`/api/get-save-thumbnail/${pieceId}`);
+  }
+
   getDrawing(pieceId: number, page: number): Observable<Blob> {
     return this.httpClient.get(`/api/get-drawings/${pieceId}/${page}`, { responseType: 'blob' });
   }
