@@ -25,26 +25,8 @@
 </div>
 <div class="flex mt-10 items-center">
     <div class="grid gap-10 grid-cols-[repeat(auto-fit,minmax(300px,400px))] justify-center items-center w-full">
-        <mat-card>
-            <mat-card-header>
-                <mat-card-title>
-                    <h4>Nadchodzące wydarzenia</h4>
-                </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-                tu bedzie lista nadchodzących wydarzeń
-            </mat-card-content>
-        </mat-card>
-        <mat-card>
-            <mat-card-header>
-                <mat-card-title>
-                    <h4>Ostatnie utwory</h4>
-                </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-                Lista ustatnio wyświetlanych utworów
-            </mat-card-content>
-        </mat-card>
+        <app-upcoming-events></app-upcoming-events>
+        <app-recent-pieces></app-recent-pieces>
     </div>
 </div>
 }

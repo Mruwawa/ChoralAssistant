@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './Components/home/home.component';
+import { HomeComponent } from './Components/HomeFeature/home/home.component';
 import { PieceListComponent } from './Components/Pieces/piece-list/piece-list.component';
 import { ViewPieceComponent } from './Components/Pieces/view-piece/view-piece.component';
 import { CalendarComponent } from './Components/CalendarFeature/calendar/calendar.component';

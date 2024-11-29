@@ -92,7 +92,11 @@ namespace ChoralAssistant.Backend.Calendar
                 {
                     var serializedPieces = match.Groups[1].Value;
                     var pieces = serializedPieces.Split(',');
-                    ev.Pieces = pieces.Select(p => new Piece { Id = p.Split('|')[0], Title = p.Split('|')[1] }).ToList();
+                    ev.Pieces = pieces.Select(p => new Piece
+                    {
+                        Id = int.TryParse(p.Split('|')[0], out int id) ? id : 0,
+                        Title = p.Split('|')[1]
+                    }).ToList();
                     ev.Description = ev.Description.Replace(match.Value, "");
                 }
 

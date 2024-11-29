@@ -21,6 +21,8 @@ namespace ChoralAssistant.Backend.Storage.Features.PieceStorage
         public Task UploadDrawingsFile(IFormFile file, int pieceId, int page);
         public Task DeletePiece(int pieceId);
         public Task<string> GetSaveThumbnailUrl(int pieceId);
+        public Task AddRecentPiece(int pieceId);
+        public Task<List<RecentPieceListing>> GetUpdateRecentPieceList();
 
     }
     internal class PieceStorageService(IUserAccessor _userAccessor, IFileRepository _fileRepository, ISqlRepository _sqlRepository) : IPieceStorageService
@@ -248,7 +250,27 @@ namespace ChoralAssistant.Backend.Storage.Features.PieceStorage
             await _sqlRepository.UpdatePieceThumbnailUrl(_userAccessor.UserId!, pieceId, thumbnailUrl);
 
             return thumbnailUrl;
+        }
+        public async Task AddRecentPiece(int pieceId) 
+        {
+            var userGuid = _userAccessor.UserId!;
+            var currentRecentPieces = await _sqlRepository.ListRecentPieces(userGuid);
+            if(currentRecentPieces.Any(p => p.PieceId == pieceId))
+            {
+                await _sqlRepository.UpdateRecentPieces(userGuid, pieceId);
+                return;
+            }
 
+            await _sqlRepository.AddRecentPiece(userGuid, pieceId);
+        }
+
+        public async Task<List<RecentPieceListing>> GetUpdateRecentPieceList() 
+        {
+            var userGuid = _userAccessor.UserId!;
+            var currentRecentPieces = await _sqlRepository.ListRecentPieces(userGuid);
+            var newRecentPieces = currentRecentPieces.Where(p => p.LastAccessed > DateTime.Now.AddDays(-7)).ToList();
+            var recentPiecesToDelete = currentRecentPieces.Except(newRecentPieces).ToList();
+            return newRecentPieces;
         }
     }
 }

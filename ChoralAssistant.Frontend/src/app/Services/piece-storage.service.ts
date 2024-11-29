@@ -17,8 +17,7 @@ export class PieceStorageService {
   private httpClient: HttpClient = inject(HttpClient);
   private sanitizer: DomSanitizer = inject(DomSanitizer);
 
-  getPieceThumbnail(pieceId: number): Observable<string>
-  {
+  getPieceThumbnail(pieceId: number): Observable<string> {
     return this.httpClient.get<string>(`/api/get-save-thumbnail/${pieceId}`);
   }
 
@@ -42,7 +41,6 @@ export class PieceStorageService {
   }
 
   getPiecePageFile(pieceId: number, page: number): Observable<Blob> {
-    console.log("Getting page file", page);
     return this.httpClient.get(`/api/download-notes-page-file/${pieceId}/${page}`, { responseType: 'blob' });
   }
 
@@ -56,6 +54,19 @@ export class PieceStorageService {
 
   getPieceAudioFile(pieceId: number) {
     return this.httpClient.get(`/api/download-audio-file/${pieceId}`, { responseType: 'blob' });
+  }
+
+  getRecentPieces(): Observable<PieceListing[]> {
+    return this.httpClient.get<PieceListing[]>("/api/get-recent-pieces");
+  }
+
+  addRecentPiece(pieceId: number) {
+    return this.httpClient.get(`/api/add-recent-piece/${pieceId}`).subscribe({
+      next: (response) => {
+      }, error: (error) => {
+        console.error(error);
+      }
+    });
   }
 }
 

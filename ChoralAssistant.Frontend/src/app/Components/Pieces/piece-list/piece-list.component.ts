@@ -41,10 +41,10 @@ export class PieceListComponent {
   }
 
   addDocument() {
+    const windowWidth = window.innerWidth;
     const dialogRef = this.dialog.open(FileUploadComponent,
       {
-        width: '70%',
-        height: '60%'
+        width: windowWidth < 800 ? '90%' : '50%',
       }
     );
 

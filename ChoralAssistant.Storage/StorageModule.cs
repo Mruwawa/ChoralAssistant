@@ -131,10 +131,26 @@ namespace ChoralAssistant.Storage
                 await pieceStorageService.DeletePiece(pieceId);
             });
 
-            routes.MapGet("api/get-save-thumbnail/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) => 
+            routes.MapGet("api/get-save-thumbnail/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
             {
                 var thumbnailUrl = await pieceStorageService.GetSaveThumbnailUrl(pieceId);
                 await context.Response.WriteAsJsonAsync(thumbnailUrl);
+            });
+
+            routes.MapGet("api/add-recent-piece/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
+            {
+                await pieceStorageService.AddRecentPiece(pieceId);
+            });
+
+            routes.MapGet("api/get-recent-pieces", async (HttpContext context, IPieceStorageService pieceStorageService) =>
+            {
+                var recentPieces = await pieceStorageService.GetUpdateRecentPieceList();
+                if (recentPieces.Count != 0)
+                {
+                    var recentPiecesListing = recentPieces.Select(p => new PieceListing() { PieceId = p.PieceId, Title = p.Title, ThumbnailUrl = "" }).ToList();
+
+                    await context.Response.WriteAsJsonAsync(recentPiecesListing);
+                }
             });
         }
     }

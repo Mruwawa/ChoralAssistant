@@ -1,4 +1,5 @@
-﻿using ChoralAssistant.Backend.Storage.Models.Dbo;
+﻿using ChoralAssistant.Backend.Storage.Models;
+using ChoralAssistant.Backend.Storage.Models.Dbo;
 using ChoralAssistant.Storage.Infrastructure;
 using ChoralAssistant.Storage.Models;
 using Dapper;
@@ -72,6 +73,41 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
                         WHERE OwnerUserGuid = @UserGuid
                         AND PieceId = @PieceId";
             await connection.ExecuteAsync(query, new { UserGuid = userGuid, PieceId = pieceId, ThumbnailUrl = thumbnailUrl }, commandType: CommandType.Text);
+        }
+
+        public async Task AddRecentPiece(string userGuid, int pieceId)
+        {
+            using var connection = GetConnection();
+            var query = @"INSERT INTO RecentPieces (PieceId, LastAccessed)
+                        VALUES (@PieceId, @LastAccessDate)";
+            await connection.ExecuteAsync(query, new { PieceId = pieceId, LastAccessDate = DateTime.Now }, commandType: CommandType.Text);
+        }
+
+        public async Task UpdateRecentPieces(string userGuid, int pieceId)
+        {
+            using var connection = GetConnection();
+            var query = @"UPDATE RecentPieces
+                        SET LastAccessed = @LastAccessDate
+                        WHERE PieceId = @PieceId";
+            await connection.ExecuteAsync(query, new { PieceId = pieceId, LastAccessDate = DateTime.Now }, commandType: CommandType.Text);
+        }
+
+        public async Task<List<RecentPieceListing>> ListRecentPieces(string userGuid)
+        {
+            using var connection = GetConnection();
+            var query = @"SELECT p.PieceId, p.Title, rp.LastAccessed FROM Pieces p
+                        INNER JOIN RecentPieces rp on p.PieceId = rp.PieceId 
+                        WHERE p.OwnerUserGuid = @UserGuid";
+            var result = await connection.QueryAsync<RecentPieceListing>(query, new { UserGuid = userGuid }, commandType: CommandType.Text);
+            return result.ToList();
+        }
+
+        public async Task DeleteRecentPieces(string userGuid, List<int> pieceIds)
+        {
+            using var connection = GetConnection();
+            var query = @"DELETE FROM RecentPieces
+                        WHERE PieceId in @PieceIds";
+            await connection.ExecuteAsync(query, new { UserGuid = userGuid, PieceIds = pieceIds }, commandType: CommandType.Text);
         }
     }
 }

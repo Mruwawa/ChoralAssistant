@@ -15,3 +15,18 @@ BEGIN
         [Type] VARCHAR(255)
     )
 END
+
+IF NOT EXISTS (SELECT 1
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME = 'RecentPieces' AND TABLE_SCHEMA = 'dbo')
+BEGIN
+    CREATE TABLE RecentPieces
+    (
+        [RecentPieceId] INT NOT NULL PRIMARY KEY IDENTITY(1, 1),
+        [PieceId] INT NOT NULL,
+        [LastAccessed] DATETIME NOT NULL
+        CONSTRAINT FK_RecentPieces_Pieces FOREIGN KEY (PieceId)
+        REFERENCES Pieces (PieceId)
+        ON DELETE CASCADE
+    )
+END

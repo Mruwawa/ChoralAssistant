@@ -61,6 +61,7 @@ export class ViewPieceComponent {
     this.loadPages();
     this.getDrawings();
     this.loadAudioFile();
+    this.pieceStorageService.addRecentPiece(this.pieceId);
   }
 
   loadAudioFile() {
@@ -167,7 +168,6 @@ export class ViewPieceComponent {
         .subscribe({
           next: (blob) => {
             if (!blob) {
-              console.log('No drawing found for page', i);
               return;
             }
             this.savedDrawings[i].content = blob;
@@ -208,7 +208,13 @@ export class ViewPieceComponent {
     if (dataUrl) {
       const img = new Image();
       img.onload = () => {
-        this.drawingCanvasContext.drawImage(img, 0, 0);
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const scaleX = canvasWidth / imgWidth;
+        const scaleY = canvasHeight / imgHeight;
+        this.drawingCanvasContext.drawImage(img, 0, 0, imgWidth * scaleX, imgHeight * scaleY);
         URL.revokeObjectURL(dataUrl);
       };
       img.src = dataUrl;
@@ -254,11 +260,14 @@ export class ViewPieceComponent {
     cursorCanvasEl.width = containerElement.scrollWidth;
     cursorCanvasEl.height = containerElement.scrollHeight;
 
-    new ResizeObserver(() => {
-      drawingCanvasEl.width = containerElement.scrollWidth;
-      drawingCanvasEl.height = containerElement.scrollHeight;
-      cursorCanvasEl.width = containerElement.scrollWidth;
-      cursorCanvasEl.height = containerElement.scrollHeight;
+    new ResizeObserver(async () => {
+      await this.saveCanvas();
+      drawingCanvasEl.width = containerElement.clientWidth;
+      drawingCanvasEl.height = containerElement.clientHeight;
+      cursorCanvasEl.width = containerElement.clientWidth;
+      cursorCanvasEl.height = containerElement.clientHeight;
+      this.restoreCanvas(this.currentPage);
+
     }).observe(containerElement);
 
     this.drawingCanvasContext = drawingCanvasEl.getContext('2d')!;
@@ -280,14 +289,21 @@ export class ViewPieceComponent {
     canvas.addEventListener('mousemove', (e) => this.moveCursor(e));
     canvas.addEventListener('mouseup', () => this.stopDrawing());
     canvas.addEventListener('mouseout', () => this.stopDrawing());
+  canvas.addEventListener('touchstart', (e) => this.startDrawing(e.touches[0]));
+  canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault(); // Prevent scrolling when drawing
+    this.moveCursor(e.touches[0]);
+  });
+  canvas.addEventListener('touchend', () => this.stopDrawing());
+  canvas.addEventListener('touchcancel', () => this.stopDrawing());
   }
 
-  startDrawing(event: MouseEvent) {
+  startDrawing(event: MouseEvent | Touch) {
     this.mouseDown = true;
     [this.lastX, this.lastY] = this.getMousePosition(event);
   }
 
-  moveCursor(event: MouseEvent) {
+  moveCursor(event: MouseEvent | Touch) {
     const [x, y] = this.getMousePosition(event);
     this.drawCursor();
 
@@ -336,7 +352,7 @@ export class ViewPieceComponent {
     this.mouseDown = false;
   }
 
-  getMousePosition(event: MouseEvent): [number, number] {
+  getMousePosition(event: MouseEvent | Touch): [number, number] {
     const canvas = this.cursorCanvas.nativeElement as HTMLCanvasElement;
     const rect = canvas.getBoundingClientRect();
 

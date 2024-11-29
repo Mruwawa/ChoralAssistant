@@ -108,7 +108,7 @@ namespace ChoralAssistant.Backend.Calendar
                 var parts = x.Split(";");
                 return new Piece()
                 {
-                    Id = parts[0],
+                    Id = int.TryParse(parts[0], out int id) ? id : 0,
                     Title = parts[1]
                 };
             }).ToList();

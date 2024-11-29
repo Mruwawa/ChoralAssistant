@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ChoralAssistant.Storage.Features.PieceStorage
 {
-    internal class InMemorySQLRepo : ISqlRepository
+    internal class InMemorySQLRepo 
     {
         private readonly Dictionary<string, Drawings> _drawings = [];
         private readonly Dictionary<string, string> _imageUrls = [];

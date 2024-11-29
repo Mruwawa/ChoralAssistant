@@ -24,7 +24,7 @@ import { ImportCalendarDialogComponent } from '../import-calendar-dialog/import-
 export class CalendarComponent {
 
   private calendarService = inject(CalendarService);
-  daysOfMonth: { day: number, events: CalendarEvent[], isToday: boolean }[] = [];
+  daysOfMonth: { day: number, events: CalendarEvent[], isToday: boolean, dayName: string }[] = [];
   firstDayOfMonth!: number;
 
   currentMonth!: number;
@@ -37,10 +37,21 @@ export class CalendarComponent {
     'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
   ];
 
+  dayNames: string[] = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nd'];
+
+  mode: 'month' | 'week' = 'month';
+
   ngOnInit() {
     this.currentMonth = new Date().getMonth();
     this.currentYear = new Date().getFullYear();
-    this.loadMonth();
+    if (window.innerWidth > 768) {
+      this.loadFullMonth();
+      this.mode = 'month';
+    }
+    else {
+      this.loadWeek();
+      this.mode = 'week';
+    }
   }
 
   changeMonth(direction: number) {
@@ -64,10 +75,50 @@ export class CalendarComponent {
     }
 
     this.daysOfMonth = [];
-    this.loadMonth();
+    this.loadFullMonth();
   }
 
-  loadMonth() {
+  loadWeek() {
+    const today = new Date();
+    const currentDay = today.getDay();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - currentDay + 1);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+
+    for (let i = 1; i <= 7; i++) {
+      let dayNumber = startOfWeek.getDate() + i - 1;
+      if (dayNumber > daysInMonth) {
+        dayNumber = dayNumber - daysInMonth;
+      }
+      this.daysOfMonth.push({
+        day: dayNumber,
+        events: [],
+        isToday: i == currentDay && this.currentMonth == new Date().getMonth() && this.currentYear == new Date().getFullYear(),
+        dayName: this.dayNames[i - 1]
+      });
+    }
+
+    this.calendarService.getEvents(startOfWeek, endOfWeek).subscribe(
+      {
+        next: (response: CalendarEvent[]) => {
+          response.forEach(event => {
+            const eventDate = new Date(event.start);
+            const index = eventDate.getDay();
+            this.daysOfMonth[index].events.push(event);
+          });
+        },
+        error: (error) => {
+          console.error(error);
+        }
+      }
+    );
+  }
+
+  loadFullMonth() {
     const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
     const firstDayOfMonthDate = new Date(this.currentYear, this.currentMonth, 1);
     const lastDayOfMonthDate = new Date(this.currentYear, this.currentMonth, daysInMonth + 1, 1);
@@ -76,11 +127,14 @@ export class CalendarComponent {
     const today = new Date().getDate();
 
     for (let i = 1; i <= daysInMonth; i++) {
-      this.daysOfMonth.push({ day: i, events: [], isToday: i == today && this.currentMonth == new Date().getMonth() && this.currentYear == new Date().getFullYear() });
+      this.daysOfMonth.push({
+        day: i, events: [], isToday: i == today && this.currentMonth == new Date().getMonth() && this.currentYear == new Date().getFullYear(),
+        dayName: this.dayNames[new Date(this.currentYear, this.currentMonth, i).getDay()]
+      });
     }
 
     for (let i = 0; i < this.firstDayOfMonth; i++) {
-      this.daysOfMonth.unshift({ day: 0, events: [], isToday: false });
+      this.daysOfMonth.unshift({ day: 0, events: [], isToday: false, dayName: '' });
     }
 
     this.calendarService.getEvents(firstDayOfMonthDate, lastDayOfMonthDate).subscribe(
@@ -101,12 +155,12 @@ export class CalendarComponent {
   }
 
   addEvent() {
-    const dialogRef = this.dialog.open(AddEventComponent, { width: '500px', height: '600px' });
+    const dialogRef = this.dialog.open(AddEventComponent, { width: window.innerWidth < 800 ? '90%' : '50%', });
 
     dialogRef.afterClosed().subscribe((result: { created: boolean }) => {
       if (result?.created) {
         this.daysOfMonth = [];
-        this.loadMonth();
+        this.loadFullMonth();
       }
     }
     );
@@ -115,29 +169,33 @@ export class CalendarComponent {
   openEventDetails(event: CalendarEvent) {
     const dialogRef = this.dialog.open(EventDetailsComponent,
       {
-        width: '500px',
-        height: '500px',
+        width: window.innerWidth < 800 ? '90%' : '50%',
         data: { event }
       });
 
     dialogRef.afterClosed().subscribe((result: { removed: boolean }) => {
       if (result?.removed) {
         this.daysOfMonth = [];
-        this.loadMonth();
+        if (this.mode === 'week') {
+          this.loadWeek();
+        }
+        else {
+          this.loadFullMonth();
+        }
       }
     }
     );
   }
 
   import() {
-    const dialogRef = this.dialog.open(ImportCalendarDialogComponent, { width: '500px', height: '500px' });
+    const dialogRef = this.dialog.open(ImportCalendarDialogComponent, { width: window.innerWidth < 800 ? '90%' : '50%', });
 
     dialogRef
       .afterClosed()
       .subscribe((result: { imported: boolean }) => {
         if (result?.imported) {
           this.daysOfMonth = [];
-          this.loadMonth();
+          this.loadFullMonth();
         }
       });
   }
@@ -147,8 +205,7 @@ export class CalendarComponent {
       next: (response: Blob) => {
         const url = window.URL.createObjectURL(response);
         this.dialog.open(ExportCalendarDialogComponent, {
-          width: '500px',
-          height: '500px',
+          width: window.innerWidth < 800 ? '90%' : '50%',
           data: { url }
         });
       },

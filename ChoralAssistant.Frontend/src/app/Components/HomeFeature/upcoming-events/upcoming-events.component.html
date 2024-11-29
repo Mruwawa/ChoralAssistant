@@ -1,0 +1,23 @@
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>
+            <h4>Nadchodzące wydarzenia</h4>
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        @if(events && events.length > 0) {
+        @for(event of events; track $index; let index = $index) {
+        <div class="flex justify-between items-center p-4 cursor-pointer" matRipple (click)="eventDetails(event)">
+            <span>{{event.title}}</span>
+            <span>{{event.start | date:'d.MM.yyyy'}} - {{event.end | date:'d.MM.yyyy'}}</span>
+        </div>
+        @if(index !== events.length - 1) {
+        <mat-divider></mat-divider>
+        }
+        }
+        }
+        @else {
+        <p>Brak nadchodzących wydarzeń</p>
+        }
+    </mat-card-content>
+</mat-card>

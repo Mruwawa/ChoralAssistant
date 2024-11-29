@@ -16,6 +16,7 @@
         {{eventDetails.end | date: 'dd.MM.yyyy'}}
         }
     </p>
+    @if(eventDetails.pieces.length > 0) {
     <div class="flex flex-row items-center justify-center gap-2">
         <span>Utwory:
         </span>
@@ -25,4 +26,5 @@
             }
         </mat-chip-set>
     </div>
+    }
 </div>

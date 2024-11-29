@@ -1,0 +1,23 @@
+<mat-card>
+    <mat-card-header>
+        <mat-card-title>
+            <h4>Ostatnie utwory</h4>
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        @if(recentPieces && recentPieces.length > 0) {
+        @for(piece of recentPieces; track $index; let index = $index) {
+        <div class="flex justify-between items-center p-4 cursor-pointer" matRipple
+            [routerLink]="'utwor/' + piece.pieceId">
+            <span>{{piece.title}}</span>
+        </div>
+        @if(index !== recentPieces.length - 1) {
+        <mat-divider></mat-divider>
+        }
+        }
+        }
+        @else {
+        <p>Brak ostatnich utworów</p>
+        }
+    </mat-card-content>
+</mat-card>
