@@ -53,34 +53,34 @@ namespace ChoralAssistant.Storage
                         return;
                     }
 
-                });
+                }).RequireAuthorization();
 
             routes.MapGet("api/list-pieces",
                 async (HttpContext context, IPieceStorageService pieceStorageService) =>
                 {
                     var pieceListings = await pieceStorageService.GetPieceList();
                     await context.Response.WriteAsJsonAsync(pieceListings);
-                });
+                }).RequireAuthorization();
 
             routes.MapGet("api/get-piece/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
             {
                 var piece = await pieceStorageService.GetPiece(pieceId);
                 await context.Response.WriteAsJsonAsync(piece);
-            });
+            }).RequireAuthorization();
 
             routes.MapGet("api/download-notes-file/{pieceId}",
                 async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
                 {
                     var notesFile = await pieceStorageService.GetNotesFile(pieceId);
                     return Results.File(notesFile.Content, notesFile.MimeType, notesFile.Name);
-                });
+                }).RequireAuthorization();
 
             routes.MapGet("api/download-notes-page-file/{pieceId}/{page}",
                 async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId, int page) =>
                 {
                     var pageFile = await pieceStorageService.GetNotesPageImageFile(pieceId, page);
                     return Results.File(pageFile.Content, pageFile.MimeType, pageFile.Name);
-                });
+                }).RequireAuthorization();
 
             routes.MapGet("api/download-audio-file/{pieceId}",
                 async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
@@ -94,7 +94,7 @@ namespace ChoralAssistant.Storage
                     {
                         return Results.NoContent();
                     }
-                });
+                }).RequireAuthorization();
 
             routes.MapPost("api/save-drawings/{pieceId}/{page}",
                 async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId, int page) =>
@@ -110,7 +110,7 @@ namespace ChoralAssistant.Storage
                     }
 
                     await pieceStorageService.UploadDrawingsFile(drawingsFile, pieceId, page);
-                });
+                }).RequireAuthorization();
 
             routes.MapGet("api/get-drawings/{pieceId}/{page}",
                 async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId, int page) =>
@@ -124,23 +124,23 @@ namespace ChoralAssistant.Storage
                     {
                         return Results.NoContent();
                     }
-                });
+                }).RequireAuthorization();
 
             routes.MapDelete("api/delete-piece/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
             {
                 await pieceStorageService.DeletePiece(pieceId);
-            });
+            }).RequireAuthorization();
 
             routes.MapGet("api/get-save-thumbnail/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
             {
                 var thumbnailUrl = await pieceStorageService.GetSaveThumbnailUrl(pieceId);
                 await context.Response.WriteAsJsonAsync(thumbnailUrl);
-            });
+            }).RequireAuthorization();
 
             routes.MapGet("api/add-recent-piece/{pieceId}", async (HttpContext context, IPieceStorageService pieceStorageService, int pieceId) =>
             {
                 await pieceStorageService.AddRecentPiece(pieceId);
-            });
+            }).RequireAuthorization();
 
             routes.MapGet("api/get-recent-pieces", async (HttpContext context, IPieceStorageService pieceStorageService) =>
             {
@@ -151,7 +151,7 @@ namespace ChoralAssistant.Storage
 
                     await context.Response.WriteAsJsonAsync(recentPiecesListing);
                 }
-            });
+            }).RequireAuthorization();
         }
     }
 }

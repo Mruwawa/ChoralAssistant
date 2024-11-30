@@ -93,7 +93,7 @@ namespace ChoralAssistant.Backend.Authorization
 
             routes.MapPost(
                 "/api/user/logout",
-                (HttpContext context) => { context.Response.Cookies.Delete("AuthToken"); });
+                (HttpContext context) => { context.Response.Cookies.Delete("AuthToken"); }).RequireAuthorization();
 
             routes.MapGet(
                 "/api/user/user-info",
@@ -114,7 +114,7 @@ namespace ChoralAssistant.Backend.Authorization
                         userName = userInfo.UserName,
                         userPhotoUrl = userInfo.PhotoUrl
                     });
-                });
+                }).RequireAuthorization();
         }
     }
 }

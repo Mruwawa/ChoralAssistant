@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>{{title}}</h2>
+<mat-dialog-content>
+    <p>{{message}}</p>
+</mat-dialog-content>
+<mat-dialog-actions class="flex gap-4">
+    <button mat-button cdkFocusInitial (click)="no()">{{noText}}</button>
+    <button mat-button (click)="yes()">{{yesText}}</button>
+</mat-dialog-actions>

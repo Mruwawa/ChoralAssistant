@@ -12,6 +12,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddAuthModule(builder.Configuration);
 builder.Services.AddStorageModule();
 builder.Services.AddCalendarModule();
+builder.Services.AddAuthorization();
 var app = builder.Build();
 
 
@@ -31,5 +32,6 @@ app.RegisterStorageEndpoints();
 app.RegisterCalendarEndpoints();
 
 app.UseAuthentication();
+app.UseAuthorization();
 app.MapFallbackToFile("index.html");
 app.Run();

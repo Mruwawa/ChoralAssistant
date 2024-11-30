@@ -1,45 +1,16 @@
-@if(loading) {
-<div class="flex justify-center items-center h-[100vh]">
-    <mat-spinner></mat-spinner>
-</div>
+@if(audioUrl){
+<audio [src]="audioUrl" controls></audio>
 }
-@else {
-<div class="flex px-2 pb-2">
-    @if(audioUrl){
-    <audio [src]="audioUrl" controls></audio>
-    }
-    @if(piece.audioUrl != null && piece.audioUrl != "" && piece.audioUrl != undefined) {
-    <a href="{{piece.audioUrl}}">Nagranie</a>
-    }
-</div>
-@if(pdfUrl || imageUrls && imageUrls.length > 0) {
-<span class="flex items-center">
-    <button mat-mini-fab (click)="previousPage()"><mat-icon>arrow_left</mat-icon></button>
-    <span class="flex-1">
-        <span class="ml-10"></span>
-        <mat-slide-toggle [(ngModel)]="isErasing">Gumka do ścierania</mat-slide-toggle>
-        <!-- <button mat-button (click)="saveDrawings()">Zapisz</button> -->
-    </span>
-    {{currentPage}} / {{piece.pageCount}}
-    <span class="flex-1"></span>
-    <button mat-mini-fab (click)="nextPage()"><mat-icon>arrow_right</mat-icon></button>
-</span>
-@if(this.piece.type == "pdf"){
-<div #pdfContainer class="h-[200vh] mt-4 pdf-container">
+@if(piece && piece.audioUrl != null && piece.audioUrl != "" && piece.audioUrl != undefined) {
+<a href="{{piece.audioUrl}}">Nagranie</a>
+}
 
-    <pdf-viewer [src]="pdfUrl" [render-text]="true" [show-all]="false" (after-load-complete)="pdfLoaded($event)"
-        [page]="currentPage" [original-size]="false" [zoom-scale]="'page-width'" class="h-full !overflow-hidden">
-    </pdf-viewer>
-    <canvas #drawingCanvas class="pdf-canvas"></canvas>
-    <canvas #cursorCanvas class="pdf-canvas"></canvas>
-</div>
+
+@if(pieceId && piece) {
+@if(piece.type == 'image'){
+<app-view-image-piece [piece]="piece" [pieceId]="pieceId" #imageViewer></app-view-image-piece>
 }
-@else {
-<div class="h-[150vh] mt-4 pdf-container imageContainer">
-    <img [src]="currentImageUrl" class="h-full !z-[-100]" />
-    <canvas #drawingCanvas class="pdf-canvas"></canvas>
-    <canvas #cursorCanvas class="pdf-canvas"></canvas>
-</div>
-}
+@else if (piece.type == 'pdf'){
+<app-view-pdf-piece [piece]="piece" [pieceId]="pieceId" #pdfViewer></app-view-pdf-piece>
 }
 }

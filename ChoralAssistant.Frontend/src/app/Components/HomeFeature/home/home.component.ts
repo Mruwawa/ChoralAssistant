@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { LoginComponent } from "../../Shared/login/login.component";
 import { UpcomingEventsComponent } from '../upcoming-events/upcoming-events.component';
 import { RecentPiecesComponent } from '../recent-pieces/recent-pieces.component';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-home',
@@ -18,6 +19,8 @@ import { RecentPiecesComponent } from '../recent-pieces/recent-pieces.component'
 export class HomeComponent {
   authService = inject(AuthorizationService);
   userInfo: Signal<UserData> = this.authService.userInfo;
+
+  httpClient = inject(HttpClient);
 
   ngOnInit() {
   }

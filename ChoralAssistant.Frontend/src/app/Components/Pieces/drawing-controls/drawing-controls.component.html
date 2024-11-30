@@ -1,0 +1,17 @@
+<span class="flex-1">
+    <span class="ml-10"></span>
+    <mat-slide-toggle [(ngModel)]="drawingSettings.isErasing">Gumka do ścierania</mat-slide-toggle>
+    <button mat-button (click)="clearCanvasConfirm()">Wyczyść kanwę</button>
+    <div>
+        <label for="colorPicker">Pick a Color:</label>
+        <input id="colorPicker" [(colorPicker)]="drawingSettings.drawingColor"
+            style="width: 100%; height: 30px; border: none; cursor: pointer;" name="colorPicker"/>
+    </div>
+    <div style="margin-top: 16px;" (click)="$event.stopPropagation()">
+        <label for="slider">Adjust Value:</label>
+        <mat-slider class="example-margin" [max]="100" [min]="1" [step]="1" [discrete]="true"
+            [showTickMarks]="true">
+            <input matSliderThumb [(ngModel)]="drawingSettings.drawingWidth" #slider>
+        </mat-slider>
+    </div>
+</span>
