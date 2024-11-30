@@ -5,6 +5,7 @@ import { ViewPieceComponent } from './Components/Pieces/view-piece/view-piece.co
 import { CalendarComponent } from './Components/CalendarFeature/calendar/calendar.component';
 import { authGuard } from './Guards/auth.guard';
 import { saveDrawingGuard } from './Guards/save-drawing.guard';
+import { DrawingControlsComponent } from './Components/Pieces/drawing-controls/drawing-controls.component';
 
 export const routes: Routes = [
     { path: '', component: HomeComponent },

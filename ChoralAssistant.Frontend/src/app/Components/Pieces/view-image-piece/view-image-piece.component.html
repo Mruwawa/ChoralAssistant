@@ -3,9 +3,10 @@
     <mat-spinner></mat-spinner>
 </div>
 } @else {
-<span class="flex items-center">
+<span class="flex items-center gap-5">
     <button mat-mini-fab (click)="previousPage()"><mat-icon>arrow_left</mat-icon></button>
     <app-drawing-controls [(drawingSettings)]="drawingSettings" (clearCanvas)="clearCanvas()"></app-drawing-controls>
+    <span class="flex-1"></span>
     <button mat-mini-fab (click)="nextPage()"><mat-icon>arrow_right</mat-icon></button>
 </span>
 <div class="mt-4 relative" #imageContainer>

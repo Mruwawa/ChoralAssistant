@@ -30,7 +30,8 @@ export class ViewPdfPieceComponent {
     drawingColor: '#000000',
     drawingWidth: 2,
     isErasing: false,
-    eraserSize: 100
+    eraserSize: 100,
+    isDrawing: true
   }
 
   pdfUrl: string = '';

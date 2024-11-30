@@ -25,7 +25,8 @@ export class DrawingCanvasComponent {
     drawingColor: '#000000',
     drawingWidth: 2,
     isErasing: false,
-    eraserSize: 100
+    eraserSize: 100,
+    isDrawing: true
   }
 
   drawingsLoading = computed(() => this.drawingUrls().some(url => url === undefined) || this.drawingUrls().length === 0);
@@ -67,22 +68,22 @@ export class DrawingCanvasComponent {
       this.pieceStorageService.getDrawing(this.pieceId, i + 1)
         .subscribe({
           next: (drawing) => {
-            if(drawing) {
+            if (drawing) {
 
-            const drawingDataUrl = URL.createObjectURL(drawing);
-            this.drawingUrls.update(value => {
-              const copy = [...value];
-              copy[i] = drawingDataUrl;
-              return copy;
-            });
-          }
-          else {
-            this.drawingUrls.update(value => {
-              const copy = [...value];
-              copy[i] = '';
-              return copy;
-            });
-          }
+              const drawingDataUrl = URL.createObjectURL(drawing);
+              this.drawingUrls.update(value => {
+                const copy = [...value];
+                copy[i] = drawingDataUrl;
+                return copy;
+              });
+            }
+            else {
+              this.drawingUrls.update(value => {
+                const copy = [...value];
+                copy[i] = '';
+                return copy;
+              });
+            }
           }
         });
     }
@@ -102,7 +103,7 @@ export class DrawingCanvasComponent {
     canvas.addEventListener('mouseout', () => this.stopDrawing());
     canvas.addEventListener('touchstart', (e) => this.startDrawing(e.touches[0]));
     canvas.addEventListener('touchmove', (e) => {
-      e.preventDefault(); // Prevent scrolling when drawing
+      if(this.drawingSettings.isDrawing || this.drawingSettings.isErasing) e.preventDefault(); // Prevent scrolling when drawing
       this.moveCursor(e.touches[0]);
     });
     canvas.addEventListener('touchend', () => this.stopDrawing());
@@ -124,7 +125,7 @@ export class DrawingCanvasComponent {
       if (this.drawingSettings.isErasing) {
         this.drawingCanvasContext.clearRect(x - this.drawingSettings.eraserSize / 2, y - this.drawingSettings.eraserSize / 2, this.drawingSettings.eraserSize, this.drawingSettings.eraserSize);
       }
-      else {
+      else if(this.drawingSettings.isDrawing) {
         this.drawingCanvasContext.beginPath();
         this.drawingCanvasContext.strokeStyle = this.drawingSettings.drawingColor;
         this.drawingCanvasContext.lineWidth = this.drawingSettings.drawingWidth;
@@ -159,11 +160,12 @@ export class DrawingCanvasComponent {
         this.drawingSettings.eraserSize,
         this.drawingSettings.eraserSize
       );
-      this.cursorCanvasContext.strokeStyle = 'blue'; // Circle outline color
-      this.cursorCanvasContext.lineWidth = 1; // Circle outline width
+      this.cursorCanvasContext.fillStyle = 'white';
+      this.cursorCanvasContext.strokeStyle = 'black';
+      this.cursorCanvasContext.lineWidth = 1;
       this.cursorCanvasContext.stroke();
     }
-    else {
+    else if (this.drawingSettings.isDrawing) {
       this.cursorCanvasContext.beginPath();
       this.cursorCanvasContext.arc(this.lastX, this.lastY, this.drawingSettings.drawingWidth / 2, 0, 2 * Math.PI);
       this.cursorCanvasContext.fillStyle = this.drawingSettings.drawingColor; // Circle fill color
@@ -173,6 +175,7 @@ export class DrawingCanvasComponent {
 
   stopDrawing() {
     this.mouseDown = false;
+    this.cursorCanvasContext.clearRect(0, 0, this.cursorCanvas.nativeElement.width, this.cursorCanvas.nativeElement.height);
   }
 
   getMousePosition(event: MouseEvent | Touch): [number, number] {

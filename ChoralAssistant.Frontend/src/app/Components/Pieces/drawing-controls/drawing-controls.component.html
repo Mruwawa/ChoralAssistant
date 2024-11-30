@@ -1,17 +1,24 @@
-<span class="flex-1">
-    <span class="ml-10"></span>
-    <mat-slide-toggle [(ngModel)]="drawingSettings.isErasing">Gumka do ścierania</mat-slide-toggle>
-    <button mat-button (click)="clearCanvasConfirm()">Wyczyść kanwę</button>
-    <div>
-        <label for="colorPicker">Pick a Color:</label>
-        <input id="colorPicker" [(colorPicker)]="drawingSettings.drawingColor"
-            style="width: 100%; height: 30px; border: none; cursor: pointer;" name="colorPicker"/>
-    </div>
-    <div style="margin-top: 16px;" (click)="$event.stopPropagation()">
-        <label for="slider">Adjust Value:</label>
-        <mat-slider class="example-margin" [max]="100" [min]="1" [step]="1" [discrete]="true"
-            [showTickMarks]="true">
-            <input matSliderThumb [(ngModel)]="drawingSettings.drawingWidth" #slider>
-        </mat-slider>
-    </div>
-</span>
+<div class="flex flex-row gap-2 items-center">
+    <button mat-icon-button (click)="toggleEdit()" class="h-[24px]">
+        <mat-icon class="{{drawingSettings.isDrawing ? 'text-[#005cbb]' : ''}}">edit</mat-icon>
+    </button>
+    <button mat-icon-button (click)="toggleEraser()" class="h-[24px]">
+        <mat-icon class="{{drawingSettings.isErasing ? 'eraserEnabled': ''}}" svgIcon="eraser"></mat-icon>
+    </button>
+    <mat-divider vertical="" class="h-[20px]"></mat-divider>
+    <button mat-icon-button (click)="clearCanvasConfirm()" class="h-[24px]">
+        <mat-icon svgIcon="clear"></mat-icon>
+    </button>
+    <mat-divider vertical="" class="h-[20px]"></mat-divider>
+    <button mat-icon-button class="relative border-black h-[24px] w-[24px]">
+        <div class="relative ">
+            <mat-icon (click)="picker.click()" class="absolute top-0 left-0"
+                [style]="'color: ' + drawingSettings.drawingColor">palette</mat-icon>
+            <input id="colorPicker" [(colorPicker)]="drawingSettings.drawingColor" #picker
+                style="width: 100%; border: none; cursor: pointer; background-color: #faf9fd;" name="colorPicker" />
+        </div>
+    </button>
+    <mat-slider [max]="100" [min]="1" [step]="1" [discrete]="true" [showTickMarks]="true">
+        <input matSliderThumb [(ngModel)]="drawingSettings.drawingWidth" #slider (change)="changeSize()">
+    </mat-slider>
+</div>

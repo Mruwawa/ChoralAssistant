@@ -1,16 +1,31 @@
-@if(audioUrl){
-<audio [src]="audioUrl" controls></audio>
-}
-@if(piece && piece.audioUrl != null && piece.audioUrl != "" && piece.audioUrl != undefined) {
-<a href="{{piece.audioUrl}}">Nagranie</a>
-}
-
-
 @if(pieceId && piece) {
+<div class="flex justify-center">
+    <h4>{{piece.title}}</h4>
+</div>
+
+<div class="pb-4 px-4 flex flex-row gap-2">
+    @if(audioUrl){
+    <span class="flex items-center">Nagranie: </span>
+    <audio [src]="audioUrl" controls></audio>
+    }
+    @if(piece && piece.audioUrl != null && piece.audioUrl != "" && piece.audioUrl != undefined) {
+    <span class="flex items-center">Link do nagrania: </span>
+    <button mat-button>
+        <a href="{{piece.audioUrl}}">
+            Otwórz
+        </a>
+    </button>
+    }
+</div>
 @if(piece.type == 'image'){
 <app-view-image-piece [piece]="piece" [pieceId]="pieceId" #imageViewer></app-view-image-piece>
 }
 @else if (piece.type == 'pdf'){
 <app-view-pdf-piece [piece]="piece" [pieceId]="pieceId" #pdfViewer></app-view-pdf-piece>
 }
+}
+@else {
+<div class="flex items-center justify-center">
+    <mat-spinner class="mt-[30vh]"></mat-spinner>
+</div>
 }
