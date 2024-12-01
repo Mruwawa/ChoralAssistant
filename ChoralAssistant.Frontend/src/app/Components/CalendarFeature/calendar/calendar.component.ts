@@ -41,9 +41,16 @@ export class CalendarComponent {
 
   mode: 'month' | 'week' = 'month';
 
+  startOfWeek!: Date;
+
   ngOnInit() {
     this.currentMonth = new Date().getMonth();
     this.currentYear = new Date().getFullYear();
+    const today = new Date();
+    this.startOfWeek = new Date(today);
+    const currentDay = today.getDay();
+    this.startOfWeek.setDate(today.getDate() - currentDay + 1);
+    this.startOfWeek.setHours(0, 0, 0, 0);
     if (window.innerWidth > 768) {
       this.loadFullMonth();
       this.mode = 'month';
@@ -55,7 +62,12 @@ export class CalendarComponent {
   }
 
   changeMonth(direction: number) {
-    const newMonth = this.currentMonth + direction;
+    let newMonth = this.currentMonth + direction;
+
+    if (this.mode === 'week') {
+      this.startOfWeek.setDate(this.startOfWeek.getDate() + direction * 7);
+      newMonth = this.startOfWeek.getMonth();
+    }
 
     if (newMonth < 0) {
       this.currentYear--;
@@ -75,40 +87,46 @@ export class CalendarComponent {
     }
 
     this.daysOfMonth = [];
-    this.loadFullMonth();
+
+    if (this.mode === 'week') {
+      this.loadWeek();
+    }
+    else {
+      this.loadFullMonth();
+    }
+
   }
 
   loadWeek() {
-    const today = new Date();
-    const currentDay = today.getDay();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - currentDay + 1);
-    startOfWeek.setHours(0, 0, 0, 0);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    const endOfWeek = new Date(this.startOfWeek);
+    endOfWeek.setDate(this.startOfWeek.getDate() + 6);
     endOfWeek.setHours(23, 59, 59, 999);
     const daysInMonth = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
-
+    const currentDay = new Date().getDate();
+    let month = new Date().getMonth();
     for (let i = 1; i <= 7; i++) {
-      let dayNumber = startOfWeek.getDate() + i - 1;
+      let dayNumber = this.startOfWeek.getDate() + i - 2;
       if (dayNumber > daysInMonth) {
         dayNumber = dayNumber - daysInMonth;
+        month++;
       }
       this.daysOfMonth.push({
         day: dayNumber,
         events: [],
-        isToday: i == currentDay && this.currentMonth == new Date().getMonth() && this.currentYear == new Date().getFullYear(),
+        isToday: dayNumber == currentDay && this.currentMonth == month && this.currentYear == new Date().getFullYear(),
         dayName: this.dayNames[i - 1]
       });
     }
 
-    this.calendarService.getEvents(startOfWeek, endOfWeek).subscribe(
+    this.calendarService.getEvents(this.startOfWeek, endOfWeek).subscribe(
       {
         next: (response: CalendarEvent[]) => {
           response.forEach(event => {
             const eventDate = new Date(event.start);
             const index = eventDate.getDay();
-            this.daysOfMonth[index].events.push(event);
+            if (eventDate.getDate() > this.startOfWeek.getDate() && eventDate.getDate() < endOfWeek.getDate()) {
+              this.daysOfMonth[index].events.push(event);
+            }
           });
         },
         error: (error) => {

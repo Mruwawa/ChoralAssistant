@@ -44,7 +44,7 @@
 
                 @for(event of day.events; track $index) {
                 <mat-chip (click)="openEventDetails(event)">
-                    {{event.title}}
+                        {{event.title.length > 15 ? event.title.substring(0, 15) + '...' : event.title}}
                 </mat-chip>
                 }
             </mat-chip-set>
