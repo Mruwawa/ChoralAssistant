@@ -156,7 +156,11 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
 
         public async Task<string> CreateFolder(string folderName)
         {
-            var mainFolderId = await GetOrCreateMainFolder();
+            var parentFolders = new List<string>();
+            if (folderName != "ChoralAssistantData")
+            {
+                parentFolders.Add(await GetOrCreateMainFolder());
+            }
             var authToken = await _accessTokenProvider.GetAccessToken();
 
             var credential = GoogleCredential.FromAccessToken(authToken);
@@ -170,7 +174,7 @@ namespace ChoralAssistant.Storage.Features.PieceStorage
             var folderMetadata = new Google.Apis.Drive.v3.Data.File
             {
                 Name = folderName,
-                Parents = new List<string> { mainFolderId },
+                Parents = parentFolders,
                 MimeType = "application/vnd.google-apps.folder"
             };
 
