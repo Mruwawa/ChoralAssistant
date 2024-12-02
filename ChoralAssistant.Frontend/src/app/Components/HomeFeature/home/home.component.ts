@@ -19,9 +19,4 @@ import { HttpClient } from '@angular/common/http';
 export class HomeComponent {
   authService = inject(AuthorizationService);
   userInfo: Signal<UserData> = this.authService.userInfo;
-
-  httpClient = inject(HttpClient);
-
-  ngOnInit() {
-  }
 }

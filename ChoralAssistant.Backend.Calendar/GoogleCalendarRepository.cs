@@ -11,7 +11,7 @@ using Google.Apis.Util;
 
 namespace ChoralAssistant.Backend.Calendar
 {
-    internal interface ICalendarRepository
+    public interface ICalendarRepository
     {
         Task<List<CalendarEvent>> GetEvents(DateTime start, DateTime end);
         Task AddEvent(CalendarEvent calendarEvent);

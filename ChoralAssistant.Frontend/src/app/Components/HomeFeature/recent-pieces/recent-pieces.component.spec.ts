@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RecentPiecesComponent } from './recent-pieces.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('RecentPiecesComponent', () => {
   let component: RecentPiecesComponent;
@@ -8,7 +9,7 @@ describe('RecentPiecesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RecentPiecesComponent]
+      imports: [RecentPiecesComponent, HttpClientTestingModule]
     })
     .compileComponents();
 

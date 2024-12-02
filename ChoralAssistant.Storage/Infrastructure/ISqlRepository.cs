@@ -4,7 +4,7 @@ using ChoralAssistant.Storage.Models;
 
 namespace ChoralAssistant.Storage.Infrastructure
 {
-    internal interface ISqlRepository
+    public interface ISqlRepository
     {
         public Task<int> SavePiece(PieceDto piece);
         public Task<List<PieceListing>> ListPiecesForUser(string userGuid);

@@ -9,7 +9,7 @@ using File = Google.Apis.Drive.v3.Data.File;
 
 namespace ChoralAssistant.Storage.Infrastructure
 {
-    internal interface IFileRepository
+    public interface IFileRepository
     {
         public Task<string> GetFolderId(string folderName);
         public Task<string> CreateFolder(string folderName);

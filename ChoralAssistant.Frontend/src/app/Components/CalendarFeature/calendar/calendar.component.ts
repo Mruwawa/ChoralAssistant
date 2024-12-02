@@ -23,7 +23,7 @@ import { ImportCalendarDialogComponent } from '../import-calendar-dialog/import-
 })
 export class CalendarComponent {
 
-  private calendarService = inject(CalendarService);
+  calendarService = inject(CalendarService);
   daysOfMonth: { day: number, events: CalendarEvent[], isToday: boolean, dayName: string }[] = [];
   firstDayOfMonth!: number;
 
@@ -154,7 +154,7 @@ export class CalendarComponent {
     for (let i = 0; i < this.firstDayOfMonth; i++) {
       this.daysOfMonth.unshift({ day: 0, events: [], isToday: false, dayName: '' });
     }
-
+    
     this.calendarService.getEvents(firstDayOfMonthDate, lastDayOfMonthDate).subscribe(
       {
         next: (response: CalendarEvent[]) => {
@@ -174,7 +174,6 @@ export class CalendarComponent {
 
   addEvent() {
     const dialogRef = this.dialog.open(AddEventComponent, { width: window.innerWidth < 800 ? '90%' : '50%', });
-
     dialogRef.afterClosed().subscribe((result: { created: boolean }) => {
       if (result?.created) {
         this.daysOfMonth = [];

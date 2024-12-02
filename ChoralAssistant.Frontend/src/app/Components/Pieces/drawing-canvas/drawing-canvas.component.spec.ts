@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DrawingCanvasComponent } from './drawing-canvas.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('DrawingCanvasComponent', () => {
   let component: DrawingCanvasComponent;
@@ -8,7 +9,7 @@ describe('DrawingCanvasComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DrawingCanvasComponent]
+      imports: [DrawingCanvasComponent, HttpClientTestingModule]
     })
     .compileComponents();
 

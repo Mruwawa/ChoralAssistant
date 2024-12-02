@@ -25,10 +25,10 @@
 <div class="{{mode == 'month' ? 'grid grid-cols-7 gap-2 mt-4 mx-20' : 'flex flex-col gap-2 mt-4 mx-10' }}">
     @for(day of daysOfMonth; track $index) {
     @if(day.day === 0) {
-    <div></div>
+    <div class="day-card"></div>
     }
     @else {
-    <mat-card class="{{day.isToday ? ('!bg-green-200') : ''}} min-h-[120px]">
+    <mat-card class="day-card {{day.isToday ? ('!bg-green-200 green') : ''}} min-h-[120px]">
         <mat-card-header>
             <mat-card-title>
                 <span class="flex flex-row">

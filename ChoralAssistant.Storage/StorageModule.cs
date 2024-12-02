@@ -21,6 +21,7 @@ namespace ChoralAssistant.Storage
             services.AddTransient<IPieceUploadModelBuilder, PieceUploadModelBuilder>();
             services.AddTransient<IPieceStorageService, PieceStorageService>();
             services.AddTransient<IFileUploadFactory, FileUploadFactory>();
+            services.AddTransient<IPdfInfoReader, PdfInfoReader>();
         }
 
         public static void RegisterStorageEndpoints(this IEndpointRouteBuilder routes)

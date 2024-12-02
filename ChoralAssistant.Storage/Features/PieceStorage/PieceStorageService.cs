@@ -25,7 +25,7 @@ namespace ChoralAssistant.Backend.Storage.Features.PieceStorage
         public Task<List<RecentPieceListing>> GetUpdateRecentPieceList();
 
     }
-    internal class PieceStorageService(IUserAccessor _userAccessor, IFileRepository _fileRepository, ISqlRepository _sqlRepository) : IPieceStorageService
+    public class PieceStorageService(IUserAccessor _userAccessor, IFileRepository _fileRepository, ISqlRepository _sqlRepository, IPdfInfoReader pdfInfoReader) : IPieceStorageService
     {
         public async Task<PieceListing> CreatePiece(PieceUploadModel pieceUploadModel)
         {
@@ -38,8 +38,7 @@ namespace ChoralAssistant.Backend.Storage.Features.PieceStorage
             {
                 var fileStream = pieceUploadModel.NoteFiles[0].OpenReadStream();
 
-                using var pdfDocument = PdfReader.Open(fileStream, PdfDocumentOpenMode.Import);
-                pageCount = pdfDocument.PageCount;
+                pageCount = pdfInfoReader.GetPageCount(fileStream);
 
                 var uploadedFile = await _fileRepository.UploadFile(folderId, new FileUpload()
                 {

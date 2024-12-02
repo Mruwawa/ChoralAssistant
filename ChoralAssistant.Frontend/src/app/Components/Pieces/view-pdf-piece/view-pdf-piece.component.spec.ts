@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ViewPdfPieceComponent } from './view-pdf-piece.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ViewPdfPieceComponent', () => {
   let component: ViewPdfPieceComponent;
@@ -8,7 +9,7 @@ describe('ViewPdfPieceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ViewPdfPieceComponent]
+      imports: [ViewPdfPieceComponent, HttpClientTestingModule]
     })
     .compileComponents();
 

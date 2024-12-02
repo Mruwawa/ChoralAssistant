@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,14 +16,14 @@ namespace ChoralAssistant.Backend.Calendar
         public static void RegisterCalendarEndpoints(this IEndpointRouteBuilder routes)
         {
             routes.MapGet("/api/calendar", async (HttpContext context, ICalendarService calendarService) =>
-            {
+                {
                 var startDate = context.Request.Query["start"];
                 var endDate = context.Request.Query["end"];
 
                 var events = await calendarService.GetEvents(DateTime.Parse(startDate), DateTime.Parse(endDate));
 
                 await context.Response.WriteAsJsonAsync(events);
-            });
+            }).RequireAuthorization();
 
             routes.MapPost("/api/add-event", async (HttpContext context, ICalendarService calendarService) =>
             {
@@ -33,7 +32,7 @@ namespace ChoralAssistant.Backend.Calendar
                 await calendarService.AddEvent(newEvent);
 
                 context.Response.StatusCode = 201;
-            });
+            }).RequireAuthorization();
 
             routes.MapPost("/api/calendar/remove", async (HttpContext context, ICalendarService calendarService) =>
             {
@@ -54,7 +53,7 @@ namespace ChoralAssistant.Backend.Calendar
 
                 await calendarService.RemoveEvent(removeRequest.Id);
                 context.Response.StatusCode = StatusCodes.Status200OK;
-            });
+            }).RequireAuthorization();
 
             routes.MapGet("/api/export-calendar", async (HttpContext context, ICalendarService calendarService) =>
             {
@@ -63,7 +62,7 @@ namespace ChoralAssistant.Backend.Calendar
                 context.Response.ContentType = "text/calendar";
                 context.Response.Headers.ContentDisposition = "attachment; filename=\"calendar.ics\"";
                 await context.Response.Body.WriteAsync(calendarBytes);
-            });
+            }).RequireAuthorization();
 
             routes.MapPost("/api/import-calendar", async (HttpContext context, ICalendarService calendarService) =>
             {
@@ -79,7 +78,7 @@ namespace ChoralAssistant.Backend.Calendar
 
                 await calendarService.Import(file.OpenReadStream());
 
-            });
+            }).RequireAuthorization();
         }
 
     }

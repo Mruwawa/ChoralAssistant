@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ChoralAssistant.Backend.Storage.Models
 {
-    internal record FileUpload
+    public record FileUpload
     {
         public required string FileName { get; init; }
         public required string FileType { get; init; }

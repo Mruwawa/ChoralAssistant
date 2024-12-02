@@ -22,10 +22,15 @@ export class AuthorizationService {
 
   async initializeGapi() {
     const gapi = await loadGapiInsideDOM();
-
+    let client_id = null;
+    try {
+      client_id = import.meta.env.NG_APP_GOOGLE_CLIENT_ID
+    }
+    catch (e) {
+    }
     gapi.load('auth2', () => {
       this.authInstance = gapi.auth2.init({
-        client_id: import.meta.env.NG_APP_GOOGLE_CLIENT_ID,
+        client_id: client_id || '',
         scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/calendar profile email'
       });
     });
