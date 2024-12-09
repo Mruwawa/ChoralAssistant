@@ -105,7 +105,7 @@ export class CalendarComponent {
     const currentDay = new Date().getDate();
     let month = new Date().getMonth();
     for (let i = 1; i <= 7; i++) {
-      let dayNumber = this.startOfWeek.getDate() + i - 2;
+      let dayNumber = this.startOfWeek.getDate() + i - 1;
       if (dayNumber > daysInMonth) {
         dayNumber = dayNumber - daysInMonth;
         month++;
